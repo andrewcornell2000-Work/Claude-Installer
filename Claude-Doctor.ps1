@@ -108,9 +108,50 @@ foreach ($p in $pcat.plugins) {
 Write-Step "Skills and agents"
 $srcSkills  = @(Get-ChildItem -Path (Join-Path $RepoRoot "skills") -Directory -ErrorAction SilentlyContinue)
 $destSkills = @(Get-ChildItem -Path (Join-Path $ClaudeHome "skills") -Directory -ErrorAction SilentlyContinue)
-$missing    = @($srcSkills.Name | Where-Object { $destSkills.Name -notcontains $_ })
-if ($missing.Count -eq 0) { Write-OK "$($srcSkills.Count) skills installed"; Add-Check "skills" "sync" "PASS" "$($srcSkills.Count)" }
-else { Write-Warn2 "$($missing.Count) skills not installed: $($missing -join ', ')"; Add-Check "skills" "sync" "WARN" "$($missing.Count) missing" }
+
+# Only skills in a selected bucket are expected on disk. A held-back skill is a
+# deliberate choice, not a fault -- flagging it would train you to ignore doctor.
+$sbCat = Read-JsonFile (Join-Path $RepoRoot "skills\_buckets.json")
+$sbSel = if ($EnvMap.ContainsKey("CLAUDE_SKILL_BUCKETS")) { $EnvMap["CLAUDE_SKILL_BUCKETS"] -split "," }
+         elseif ($sbCat) { $sbCat._defaultSkillBuckets }
+         else { @("core", "data", "powerbi") }
+$sbSel = @($sbSel | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ })
+
+$expected = @($srcSkills | Where-Object {
+    $b = if ($sbCat -and $sbCat.skills.PSObject.Properties.Name -contains $_.Name) { $sbCat.skills.($_.Name) } else { "core" }
+    ($sbSel -contains "all") -or ($sbSel -contains $b)
+})
+$held    = $srcSkills.Count - $expected.Count
+$missing = @($expected.Name | Where-Object { $destSkills.Name -notcontains $_ })
+
+if ($missing.Count -eq 0) {
+    Write-OK "$($expected.Count) skills installed  (buckets: $($sbSel -join ', '))"
+    if ($held -gt 0) { Write-Info "$held held back by bucket selection -- expected" }
+    Add-Check "skills" "sync" "PASS" "$($expected.Count) of $($srcSkills.Count)"
+} else {
+    Write-Warn2 "$($missing.Count) selected skills not installed: $($missing -join ', ')"
+    Add-Check "skills" "sync" "WARN" "$($missing.Count) missing"
+}
+
+# Descriptions are the permanent context cost -- bodies only load on trigger.
+$descChars = 0
+foreach ($d in $destSkills) {
+    $sk = Join-Path $d.FullName "SKILL.md"
+    if (-not (Test-Path $sk)) { continue }
+    $inFm = $false; $inDesc = $false; $buf = @()
+    foreach ($line in Get-Content -Path $sk -Encoding UTF8) {
+        if ($line.Trim() -eq "---") { if ($inFm) { break } else { $inFm = $true; continue } }
+        if (-not $inFm) { continue }
+        if ($line -match '^[A-Za-z_][A-Za-z0-9_-]*:') {
+            if ($line -match '^description:\s*(.*)$') { $inDesc = $true; $buf += $Matches[1] }
+            elseif ($inDesc) { break }
+        } elseif ($inDesc) { $buf += $line.Trim() }
+    }
+    $descChars += ($buf -join " ").Trim('"', "'").Length
+}
+$descTokens = [int]($descChars / 4)
+if ($descTokens -le 1500) { Write-OK "skill descriptions ~$descTokens tokens always in context"; Add-Check "skills" "context-cost" "PASS" "~$descTokens tok" }
+else { Write-Warn2 "skill descriptions ~$descTokens tokens always in context -- consider trimming or narrowing buckets"; Add-Check "skills" "context-cost" "WARN" "~$descTokens tok" }
 
 # A SKILL.md without frontmatter never triggers.
 $bad = @()

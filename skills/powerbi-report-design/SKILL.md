@@ -1,14 +1,6 @@
 ---
 name: powerbi-report-design
-description: >-
-  Generate Power BI report visual design guidance before PBIR files are
-  written. Use when the user wants to: (1) choose tone, signature, page
-  archetypes, chart types, layout, color, typography, theme direction, or
-  accessibility approach, (2) redesign/restyle an existing report, apply a
-  brand, or critique chart/layout choices, (3) produce a design contract for
-  `powerbi-report-authoring`. Triggers: "design Power BI report",
-  "make dashboard look professional", "choose chart type", "apply brand to
-  report", "redesign report", "create design brief".
+description: "Power BI report visual design guidance before PBIR files are written: tone, page archetypes, chart types, layout, color, typography, theme, accessibility. Produces a design brief for powerbi-report-authoring."
 metadata:
   version: 0.1.0
 ---

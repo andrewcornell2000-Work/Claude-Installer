@@ -69,7 +69,26 @@ Useful flags:
 
 Default is all five buckets. Profiles in `claude.manifest.json`: `work` (default), `analyst` (no web/webdev), `minimal` (core only).
 
-**52 skills** → `~/.claude/skills`
+**52 skills in the repo, 27 installed by default** → `~/.claude/skills`
+
+Skills are bucket-gated too, and for a different reason than MCPs: every installed skill's `description` line sits in context permanently, used or not. Bodies only load when a skill triggers.
+
+| Bucket | Skills | ~tokens | Default |
+|---|---|---|---|
+| `core` | 10 | 375 | yes |
+| `data` | 7 | 170 | yes |
+| `powerbi` | 10 | 501 | yes |
+| `design` | 17 | 793 | no |
+| `web` | 8 | 542 | no |
+
+Default set: **27 skills, ~1,046 tokens.** All 52 ship in the repo — install a held-back bucket without re-cloning:
+
+```powershell
+.\Claude-Provision.ps1 -Only skills -SkillBuckets all
+```
+
+Deselecting a bucket archives those skills to `~/.claude/backups` rather than leaving them to cost context.
+
 **3 agents** → `~/.claude/agents`
 **6 hooks** → wired into `~/.claude/settings.json`
 **Plugins** → caveman, plus the official Anthropic marketplace registered

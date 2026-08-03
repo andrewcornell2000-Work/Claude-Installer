@@ -1,14 +1,6 @@
 ---
 name: powerbi-report-authoring
-description: >-
-  Create and modify Power BI report files in PBIR/PBIP format using the
-  `powerbi-report-author` and `powerbi-desktop` CLIs. Use when the user wants
-  to: (1) implement an approved report spec or design brief, (2) add or edit
-  pages, visuals, filters, slicers, bookmarks, themes, or formatting, (3)
-  validate PBIR and verify rendering in Power BI Desktop. For open-ended visual
-  design, use `powerbi-report-design` first. Triggers: "edit PBIR",
-  "create Power BI report page", "add visual to PBIP", "format report visual",
-  "validate Power BI report", "reload Desktop screenshot", "implement an approved PBIP report spec", "edit PBIR pages/visuals".
+description: "Create and edit Power BI report files in PBIR/PBIP format: pages, visuals, filters, slicers, bookmarks, themes, formatting. Validate PBIR and verify rendering in Desktop. For design direction first, use powerbi-report-design."
 metadata:
   version: 0.1.0
 ---

@@ -10,6 +10,12 @@
     Comma-separated MCP buckets, or "all". Overrides CLAUDE_BUCKETS in .env.
     Default: core,powerbi,data,web,webdev
 
+.PARAMETER SkillBuckets
+    Comma-separated skill buckets, or "all". Overrides CLAUDE_SKILL_BUCKETS in .env.
+    Default: core,data,powerbi -- see skills/_buckets.json.
+    Skills are gated separately from MCPs because their cost model differs: every
+    installed skill's description sits in context permanently, whether used or not.
+
 .PARAMETER Only
     Restrict the run to named sections: mcp, plugins, skills, agents, hooks, memory.
 
@@ -26,6 +32,7 @@
 [CmdletBinding()]
 param(
     [string[]]$Buckets,
+    [string[]]$SkillBuckets,
     [ValidateSet("mcp", "plugins", "skills", "agents", "hooks", "memory")]
     [string[]]$Only,
     [switch]$DryRun
@@ -216,14 +223,27 @@ if (Use-Section "plugins") {
 # Skills
 # ══════════════════════════════════════════════════════════════════════════════
 if (Use-Section "skills") {
-    Write-Step "Skills -> ~/.claude/skills"
     $src  = Join-Path $RepoRoot "skills"
     $dest = Join-Path $ClaudeHome "skills"
+    $sbCat = Read-JsonFile (Join-Path $src "_buckets.json")
+
+    $sbSel = $null
+    if ($SkillBuckets)                                    { $sbSel = $SkillBuckets }
+    elseif ($EnvMap.ContainsKey("CLAUDE_SKILL_BUCKETS"))  { $sbSel = $EnvMap["CLAUDE_SKILL_BUCKETS"] -split "," }
+    elseif ($sbCat)                                       { $sbSel = $sbCat._defaultSkillBuckets }
+    else                                                  { $sbSel = @("core", "data", "powerbi") }
+    $sbSel = @($sbSel | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ })
+    $allSkills = ($sbSel -contains "all")
+
+    Write-Step "Skills -> ~/.claude/skills  (buckets: $(if ($allSkills) { 'all' } else { $sbSel -join ', ' }))"
     if (-not (Test-Path $src)) { Write-Warn2 "skills/ missing in repo." }
     else {
         if (-not $DryRun -and -not (Test-Path $dest)) { New-Item -ItemType Directory -Force -Path $dest | Out-Null }
-        $n = 0
+        $n = 0; $held = 0
         foreach ($d in Get-ChildItem -Path $src -Directory) {
+            $bucket = "core"
+            if ($sbCat -and $sbCat.skills.PSObject.Properties.Name -contains $d.Name) { $bucket = $sbCat.skills.($d.Name) }
+            if (-not $allSkills -and $sbSel -notcontains $bucket) { $held++; continue }
             $target = Join-Path $dest $d.Name
             if ($DryRun) { $n++; continue }
             if (Test-Path $target) { Remove-Item -Path $target -Recurse -Force }
@@ -232,6 +252,26 @@ if (Use-Section "skills") {
         }
         Write-OK "$n skills synced$(if ($DryRun) { ' (would be)' })"
         Note-Added "$n skills"
+        if ($held -gt 0) {
+            Write-Skip "$held skills held back -- buckets not selected"
+            Write-Info  "install them with: .\Claude-Provision.ps1 -Only skills -SkillBuckets all"
+        }
+
+        # A held-back skill left over from a previous run keeps costing context.
+        if (-not $DryRun -and $sbCat) {
+            $stale = @()
+            foreach ($d in Get-ChildItem -Path $dest -Directory -ErrorAction SilentlyContinue) {
+                if ($sbCat.skills.PSObject.Properties.Name -notcontains $d.Name) { continue }
+                $b = $sbCat.skills.($d.Name)
+                if (-not $allSkills -and $sbSel -notcontains $b) { $stale += $d }
+            }
+            if ($stale.Count -gt 0) {
+                $arch = Join-Path $ClaudeHome "backups\skills-deselected-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+                New-Item -ItemType Directory -Force -Path $arch | Out-Null
+                foreach ($d in $stale) { Move-Item -Path $d.FullName -Destination (Join-Path $arch $d.Name) -Force }
+                Write-OK "$($stale.Count) deselected skills archived to $arch"
+            }
+        }
 
         # Legacy prefixed copies in the old ~/.agents root shadow the canonical set.
         $legacyRoot = Join-Path $env:USERPROFILE ".agents\skills"

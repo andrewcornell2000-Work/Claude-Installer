@@ -1,22 +1,6 @@
 ---
 name: dataflows-authoring-cli
-description: >
-  Create, update, delete, and refresh Fabric Dataflows Gen2 via write-side CLI
-  against Fabric Items and Connections APIs. Builds mashup.pq + queryMetadata
-  definitions, triggers parameterized refreshes, manages connections, and
-  configures output destinations (Lakehouse, Warehouse, ADX, Azure SQL).
-  Includes preview-driven authoring loop (executeQuery + customMashupDocument).
-  Lists `supportedConnectionTypes`/`credentialType` per connector.
-  For executing saved queries or reading refresh status, use
-  `dataflows-consumption-cli`.
-  Triggers: "create dataflow", "update dataflow", "delete dataflow",
-  "trigger dataflow refresh", "refresh dataflow", "preview Power Query M",
-  "preview mashup", "preview before save", "iterate dataflow M",
-  "create Fabric data source connection", "create dataflow connection",
-  "bind connection", "list supportedConnectionTypes",
-  "dataflow output destination", "dataflow write to lakehouse",
-  "dataflow write to warehouse", "dataflow write to ADX",
-  "DataDestinations annotation".
+description: "Write-side Fabric Dataflows Gen2. Create, update, delete and refresh dataflows, preview Power Query M before saving, manage connections and output destinations (Lakehouse, Warehouse, ADX, Azure SQL). Reading lives in dataflows-consumption-cli."
 ---
 
 > **Update Check — ONCE PER SESSION (mandatory)**

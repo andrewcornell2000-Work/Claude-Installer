@@ -1,21 +1,6 @@
 ---
 name: dataflows-consumption-cli
-description: >
-  Monitor, inspect, and query saved Fabric Dataflows Gen2 via read-only CLI.
-  List dataflows, decode base64 definitions (mashup.pq, queryMetadata.json,
-  .platform), discover parameters, retrieve refresh status and job history,
-  classify queries by staging, and execute queries against saved dataflows via
-  the read-side `executeQuery` mashup engine (Arrow IPC response). Runs
-  persisted or ad-hoc read-only executeQuery requests; parses/renders Arrow
-  results. For previewing
-  candidate M before persisting, or for `supportedConnectionTypes`/`credentialType`
-  discovery and connection configuration, use `dataflows-authoring-cli`
-  (not this skill).
-  Triggers: "list dataflows", "inspect dataflow", "decode dataflow definition",
-  "dataflow parameters", "dataflow refresh status", "refresh history",
-  "last refresh status", "dataflow job history", "execute dataflow query",
-  "executeQuery saved query", "executeQuery fetch rows", "ad-hoc dataflow query",
-  "parse Arrow response", "Arrow IPC", "dataflow staging analysis".
+description: "Read-only Fabric Dataflows Gen2. List dataflows, inspect and decode definitions (mashup.pq, queryMetadata), discover parameters, refresh status, job history, and executeQuery against saved dataflows (Arrow IPC). Authoring lives in dataflows-authoring-cli."
 ---
 
 > **Update Check — ONCE PER SESSION (mandatory)**

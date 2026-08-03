@@ -1,17 +1,6 @@
 ---
 name: semantic-model-authoring
-description: >
-  Develops and manages Power BI semantic models across Desktop, PBIP projects, and Fabric Service. Handles:
-  (1) creating new models (Import, DirectQuery, Direct Lake),
-  (2) editing existing models (e.g. measures, tables, columns, relationships),
-  (3) deploying models to Fabric workspaces,
-  (4) working with PBIP project files,
-  (5) refreshing semantic models,
-  (6) configuring data sources and permissions,
-  (7) DAX performance optimization.
-  Supports both Power BI Desktop and Fabric Service development workflows. For read-only DAX queries, use Power BI Modeling MCP / `execute_dax`.
-  Does NOT handle report layout/visual authoring, workspace administration, or RLS/OLS role membership management.
-  Triggers: "create semantic model", "edit semantic model", "add a DAX measure to semantic model", "refresh semantic model", "set semantic model permissions", "Prepare semantic model for AI/Copilot".
+description: "Create, edit, deploy and refresh Power BI semantic models (Import, DirectQuery, Direct Lake) across Desktop, PBIP and Fabric Service. Measures, tables, columns, relationships, DAX performance. Not report layout or workspace admin."
 ---
 
 > **Update Check — ONCE PER SESSION (mandatory)**
