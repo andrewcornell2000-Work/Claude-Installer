@@ -1,18 +1,22 @@
 # Claude-Installer bootstrap.
 #
-# One-liner for a brand new machine -- installs Git if needed, clones the repo,
-# and runs the installer:
+# This repo is PRIVATE, so an unauthenticated `irm ... | iex` cannot reach it.
+# On a new machine, install the GitHub CLI, sign in, then run this file:
 #
-#   irm https://raw.githubusercontent.com/andrewcornell2000-Work/Claude-Installer/main/bootstrap.ps1 | iex
+#   winget install --id GitHub.cli
+#   gh auth login
+#   gh repo clone andrewcornell2000-Work/Claude-Installer "$env:USERPROFILE\Claude-Installer"
+#   & "$env:USERPROFILE\Claude-Installer\bootstrap.ps1"
 #
-# Optional overrides, set before piping to iex:
+# Optional overrides:
 #   $env:CLAUDE_INSTALLER_DIR     = "D:\tools\Claude-Installer"   # clone location
 #   $env:CLAUDE_INSTALLER_BRANCH  = "main"
 #   $env:CLAUDE_INSTALLER_BUCKETS = "core,data"
 
 $ErrorActionPreference = "Stop"
 
-$RepoUrl = "https://github.com/andrewcornell2000-Work/Claude-Installer.git"
+$RepoSlug = "andrewcornell2000-Work/Claude-Installer"
+$RepoUrl  = "https://github.com/$RepoSlug.git"
 $Branch  = if ($env:CLAUDE_INSTALLER_BRANCH) { $env:CLAUDE_INSTALLER_BRANCH } else { "main" }
 $Target  = if ($env:CLAUDE_INSTALLER_DIR)    { $env:CLAUDE_INSTALLER_DIR }
            else { Join-Path $env:USERPROFILE "Claude-Installer" }
@@ -44,9 +48,14 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 Good "git $((& git --version) -replace 'git version ', '')"
 
 # ── Clone or update ───────────────────────────────────────────────────────────
+# The repo is private. `gh` carries the auth; plain git needs a credential
+# helper already configured, so prefer gh and fall back only if it is absent.
+$gh = Get-Command gh -ErrorAction SilentlyContinue
+
 if (Test-Path (Join-Path $Target ".git")) {
     Say "Existing checkout at $Target -- pulling..."
     & git -C $Target pull --ff-only 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { Bad "pull failed -- check your GitHub auth (gh auth status)"; exit 4 }
     Good "updated"
 } else {
     if (Test-Path $Target) {
@@ -54,8 +63,23 @@ if (Test-Path (Join-Path $Target ".git")) {
         exit 4
     }
     Say "Cloning into $Target ..."
-    & git clone --branch $Branch --depth 1 $RepoUrl $Target 2>&1 | Out-Null
-    if (-not (Test-Path (Join-Path $Target ".git"))) { Bad "clone failed"; exit 4 }
+    if ($gh) {
+        & gh auth status 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Bad "gh is installed but not signed in. Run:  gh auth login"
+            exit 5
+        }
+        & gh repo clone $RepoSlug $Target -- --branch $Branch 2>&1 | Out-Null
+    } else {
+        Say "gh not found -- trying plain git (needs a credential helper for a private repo)"
+        & git clone --branch $Branch $RepoUrl $Target 2>&1 | Out-Null
+    }
+    if (-not (Test-Path (Join-Path $Target ".git"))) {
+        Bad "clone failed. This repo is private -- install the GitHub CLI and sign in:"
+        Write-Host "     winget install --id GitHub.cli" -ForegroundColor Yellow
+        Write-Host "     gh auth login" -ForegroundColor Yellow
+        exit 4
+    }
     Good "cloned"
 }
 

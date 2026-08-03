@@ -8,22 +8,28 @@ Claude Code only. No Cursor, no Codex, no Claude Desktop. That is the entire poi
 
 ## New machine, from nothing
 
+This repo is **private**, so the clone needs auth. Paste this into PowerShell:
+
 ```powershell
-irm https://raw.githubusercontent.com/andrewcornell2000-Work/Claude-Installer/main/bootstrap.ps1 | iex
+winget install --id GitHub.cli --silent --accept-package-agreements --accept-source-agreements; gh auth login; gh repo clone andrewcornell2000-Work/Claude-Installer "$env:USERPROFILE\Claude-Installer"; & "$env:USERPROFILE\Claude-Installer\bootstrap.ps1"
 ```
 
-Installs Git if missing, clones to `%USERPROFILE%\Claude-Installer`, runs the installer.
+`gh auth login` is interactive — pick GitHub.com → HTTPS → login with a browser.
+
+Everything after that is unattended: `bootstrap.ps1` installs Git if missing, then runs the full installer.
 
 ## Already cloned
 
-```bash
-git clone https://github.com/andrewcornell2000-Work/Claude-Installer.git
-```
-
-Then double-click `Install-Claude.bat`, or:
+Double-click `Install-Claude.bat`, or:
 
 ```powershell
 .\Claude-Install.ps1
+```
+
+## Updating later
+
+```powershell
+.\Claude-Sync.ps1
 ```
 
 ---
