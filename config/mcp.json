@@ -147,6 +147,14 @@
       "_requires": [],
       "_oauthOnFirstUse": true,
       "_note": "OAuth on first use."
+    },
+    "higgsfield": {
+      "type": "http",
+      "url": "https://mcp.higgsfield.ai/mcp",
+      "_bucket": "webdev",
+      "_requires": [],
+      "_oauthOnFirstUse": true,
+      "_note": "Official Higgsfield connector - image and video generation (Sora, Veo, Kling, GPT Image, Seedance, Nano Banana Pro). OAuth against your Higgsfield account on first use; no API key in config. Credit-billed per generation, so it costs real money. Use the unofficial geopopos/higgsfield_ai_mcp packages only if you specifically need the local-server variant - they want HF_API_KEY + HF_SECRET and a Poetry checkout."
     }
   },
   "_buckets": {

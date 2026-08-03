@@ -51,14 +51,14 @@
   },
   "skill_buckets": {
     "catalog": "skills/_buckets.json",
-    "default": ["core", "data", "powerbi"],
-    "$comment": "Gated separately from MCP buckets. A skill's description line is a permanent context cost whether or not it is ever used; its body loads only on trigger. Default set is 27 of 52 skills, about 1,046 tokens."
+    "default": ["core", "data", "powerbi", "webapp"],
+    "$comment": "Gated separately from MCP buckets. A skill's description line is a permanent context cost whether or not it is ever used; its body loads only on trigger. Default set is 35 of 52 skills, about 1,515 tokens."
   },
   "counts": {
     "skills_in_repo": 52,
-    "skills_installed_by_default": 27,
+    "skills_installed_by_default": 35,
     "agents": 3,
     "hooks": 6,
-    "mcp_servers": 16
+    "mcp_servers": 17
   }
 }

@@ -57,7 +57,7 @@ Useful flags:
 
 ## What gets installed
 
-**15 MCP servers**, bucket-gated. Anything missing a key or a runtime is skipped with a printed reason rather than registered broken.
+**16 MCP servers**, bucket-gated. Anything missing a key or a runtime is skipped with a printed reason rather than registered broken.
 
 | Bucket | Servers |
 |---|---|
@@ -65,23 +65,26 @@ Useful flags:
 | `powerbi` | powerbi-modeling-mcp |
 | `data` | excel, duckdb, markitdown, longhand |
 | `web` | playwright, fetch, parallel-search, firecrawl |
-| `webdev` | magic, fal-ai, supabase, vercel |
+| `webdev` | magic, fal-ai, supabase, vercel, higgsfield |
 
 Default is all five buckets. Profiles in `claude.manifest.json`: `work` (default), `analyst` (no web/webdev), `minimal` (core only).
 
-**52 skills in the repo, 27 installed by default** → `~/.claude/skills`
+**52 skills in the repo, 35 installed by default** → `~/.claude/skills`
 
 Skills are bucket-gated too, and for a different reason than MCPs: every installed skill's `description` line sits in context permanently, used or not. Bodies only load when a skill triggers.
 
-| Bucket | Skills | ~tokens | Default |
-|---|---|---|---|
-| `core` | 10 | 375 | yes |
-| `data` | 7 | 170 | yes |
-| `powerbi` | 10 | 501 | yes |
-| `design` | 17 | 793 | no |
-| `web` | 8 | 542 | no |
+| Bucket | Skills | ~tokens | Default | |
+|---|---|---|---|---|
+| `core` | 10 | 375 | yes | planning, handoff, github, graphify |
+| `data` | 7 | 170 | yes | Excel, analysis, reconciliation, labour cost |
+| `powerbi` | 10 | 500 | yes | model editing, Power Query, reports, dataflows |
+| `webapp` | 8 | 469 | yes | building and polishing web apps |
+| `design` | 9 | 500 | no | brand kits, mobile mockups, overlapping taste skills |
+| `web` | 8 | 365 | no | Supabase, Vercel, browsing, trend research |
 
-Default set: **27 skills, ~1,046 tokens.** All 52 ship in the repo — install a held-back bucket without re-cloning:
+`webapp` is a curated slice of the design skills — component patterns, UI audit, accessibility, visual direction, reference-image generation — rather than all 17. The wider `design` bucket holds the ones with heavy overlap or a narrow use (mobile screens, logo systems, the legacy `design-taste-frontend-v1`).
+
+Default set: **35 skills, ~1,515 tokens.** All 52 ship in the repo — install a held-back bucket without re-cloning:
 
 ```powershell
 .\Claude-Provision.ps1 -Only skills -SkillBuckets all
