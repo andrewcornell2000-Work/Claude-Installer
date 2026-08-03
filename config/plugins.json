@@ -1,0 +1,33 @@
+{
+  "$comment": "Claude Code plugin marketplaces and plugins. Applied by Claude-Provision.ps1 via `claude plugin marketplace add` and `claude plugin install`. Both are idempotent - re-running is safe.",
+  "marketplaces": [
+    {
+      "name": "caveman",
+      "source": "JuliusBrussee/caveman",
+      "_note": "Terse caveman output style, cavecrew subagents, token-savings stats."
+    },
+    {
+      "name": "claude-plugins-official",
+      "source": "https://github.com/anthropics/claude-plugins-official.git",
+      "_note": "Anthropic's official marketplace. ~40 plugins plus external connectors."
+    }
+  ],
+  "plugins": [
+    {
+      "id": "caveman@caveman",
+      "enabled": true,
+      "_note": "Installs the caveman output style plus its statusline hook."
+    }
+  ],
+  "_available": {
+    "_note": "Not installed by default. Add to the plugins array above to include. Full list: claude plugin marketplace list claude-plugins-official",
+    "suggested": [
+      "code-review@claude-plugins-official",
+      "pr-review-toolkit@claude-plugins-official",
+      "feature-dev@claude-plugins-official",
+      "skill-creator@claude-plugins-official",
+      "hookify@claude-plugins-official",
+      "claude-security@claude-plugins-official"
+    ]
+  }
+}

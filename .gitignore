@@ -1,0 +1,28 @@
+# Secrets - never commit
+.env
+*.env.local
+*.pem
+*.key
+
+# Local state produced by provisioning
+data/
+logs/
+.venv/
+node/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Node
+node_modules/
+
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+
+# Provision receipts (machine-specific)
+.provision-state.json

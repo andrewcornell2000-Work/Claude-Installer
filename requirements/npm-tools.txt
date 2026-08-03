@@ -1,0 +1,4 @@
+# Global npm CLIs installed by Claude-Install.ps1.
+# Format: package-name:cli-command:description
+# Lines starting with # are ignored.
+@anthropic-ai/claude-code:claude:Claude Code CLI

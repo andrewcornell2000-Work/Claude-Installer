@@ -1,0 +1,163 @@
+{
+  "$comment": "Claude Code MCP catalog. Template only. ${env:VAR} resolves from .env or machine env at provision time; ${financeDir}, ${dataDir}, ${powerBiMcp} are path tokens resolved by Claude-Provision.ps1. Keys starting with _ are metadata and are stripped before registration. NEVER put real tokens in this file. Each server declares a _bucket; only selected buckets install. Servers whose _requires env vars are missing, or whose _requiresCommand is not on PATH, are skipped with a reason.",
+  "_defaultBuckets": ["core", "powerbi", "data", "web", "webdev"],
+  "mcpServers": {
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github@latest"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}" },
+      "_bucket": "core",
+      "_requires": ["GITHUB_PERSONAL_ACCESS_TOKEN"],
+      "_aliases": { "GITHUB_PERSONAL_ACCESS_TOKEN": ["GITHUB_TOKEN"] },
+      "_note": "Repos, PRs, issues, code search. Token from .env. Create at https://github.com/settings/tokens"
+    },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "env": { "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}" },
+      "_bucket": "core",
+      "_requires": [],
+      "_optionalEnv": ["CONTEXT7_API_KEY"],
+      "_note": "Library/SDK docs. Works keyless; a key raises rate limits. Prefer over fetch for API syntax."
+    },
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@latest", "${financeDir}"],
+      "_bucket": "core",
+      "_requires": [],
+      "_note": "Scoped to the finance OneDrive folder only. Use native Read/Grep for repo code."
+    },
+
+    "powerbi-modeling-mcp": {
+      "type": "stdio",
+      "command": "${powerBiMcp}",
+      "args": ["--start"],
+      "_bucket": "powerbi",
+      "_requires": [],
+      "_requiresToken": "powerBiMcp",
+      "_note": "Edit live Power BI Desktop models. Resolved by globbing the installed VS Code extension; skipped if absent."
+    },
+
+    "excel": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["--yes", "@negokaz/excel-mcp-server"],
+      "env": { "EXCEL_MCP_PAGING_CELLS_LIMIT": "${env:EXCEL_MCP_PAGING_CELLS_LIMIT}" },
+      "_bucket": "data",
+      "_requires": [],
+      "_envDefaults": { "EXCEL_MCP_PAGING_CELLS_LIMIT": "5000" },
+      "_note": "Read/write xlsx. Paging limit is cells per response; ~8 tokens/cell, so 5000 is already ~40k tokens per read. Raise only with a reason."
+    },
+    "duckdb": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-server-duckdb", "--db-path", "${dataDir}\\analytics.duckdb"],
+      "_bucket": "data",
+      "_requires": [],
+      "_requiresCommand": "uvx",
+      "_note": "SQL over CSV, Parquet, Excel exports and the local analytics DB. Path is repo-local and stable across sessions."
+    },
+    "markitdown": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["markitdown-mcp"],
+      "_bucket": "data",
+      "_requires": [],
+      "_requiresCommand": "uvx",
+      "_note": "Local file conversion (PDF, Office, images) to markdown."
+    },
+    "longhand": {
+      "type": "stdio",
+      "command": "longhand",
+      "args": ["mcp-server"],
+      "_bucket": "data",
+      "_requires": [],
+      "_requiresCommand": "longhand",
+      "_note": "Lossless Claude Code session history. pip install -U longhand && longhand setup. Skipped if not on PATH."
+    },
+
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--browser", "chromium"],
+      "_bucket": "web",
+      "_requires": [],
+      "_note": "Browser automation. No key needed."
+    },
+    "fetch": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
+      "_bucket": "web",
+      "_requires": [],
+      "_requiresCommand": "uvx",
+      "_note": "Single known URL to markdown. Not for library docs (context7) or search."
+    },
+    "parallel-search": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-remote@latest", "https://search.parallel.ai/mcp"],
+      "_bucket": "web",
+      "_requires": [],
+      "_optionalEnv": ["PARALLEL_API_KEY"],
+      "_note": "LLM-optimized web search and fetch. Set PARALLEL_API_KEY for higher rate limits."
+    },
+    "firecrawl": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp@latest"],
+      "env": { "FIRECRAWL_API_KEY": "${env:FIRECRAWL_API_KEY}" },
+      "_bucket": "web",
+      "_requires": ["FIRECRAWL_API_KEY"],
+      "_note": "Scraping and crawling. Skipped unless FIRECRAWL_API_KEY is set."
+    },
+
+    "magic": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@magicuidesign/mcp@latest"],
+      "_bucket": "webdev",
+      "_requires": [],
+      "_note": "Magic UI components - animated React/Tailwind blocks. No key required."
+    },
+    "fal-ai": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "fal-ai-mcp-server@latest"],
+      "env": { "FAL_KEY": "${env:FAL_KEY}" },
+      "_bucket": "webdev",
+      "_requires": ["FAL_KEY"],
+      "_note": "Image/video/audio generation via fal.ai. Skipped unless FAL_KEY is set."
+    },
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=${env:SUPABASE_PROJECT_REF}",
+      "_bucket": "webdev",
+      "_requires": ["SUPABASE_PROJECT_REF"],
+      "_oauthOnFirstUse": true,
+      "_note": "OAuth on first use. Skipped unless SUPABASE_PROJECT_REF is set."
+    },
+    "vercel": {
+      "type": "http",
+      "url": "https://mcp.vercel.com",
+      "_bucket": "webdev",
+      "_requires": [],
+      "_oauthOnFirstUse": true,
+      "_note": "OAuth on first use."
+    }
+  },
+  "_buckets": {
+    "core": "Always installed - GitHub, library docs, finance-scoped filesystem.",
+    "powerbi": "Power BI semantic-model editing plus the Fabric skill pack.",
+    "data": "Analyst stack - Excel, DuckDB, markitdown, optional longhand.",
+    "web": "Browsing and search - Playwright, parallel-search, fetch, optional Firecrawl.",
+    "webdev": "SaaS and generation - Magic UI, fal.ai, Supabase, Vercel. Key-gated ones self-skip."
+  },
+  "_retired": {
+    "excel-mcp": "Removed. Conflicted with the npx excel server (opposite access model - closed vs open workbook). The npx @negokaz server is the one in proven use.",
+    "excellm": "Removed. Required a repo venv build step; replaced by npx @negokaz/excel-mcp-server."
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$comment": "Template for ~/.claude/settings.json. ${repoRoot} is replaced with the Claude-Installer clone path at provision time. Claude-Provision.ps1 MERGES this into any existing settings.json rather than overwriting - your own keys survive.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${repoRoot}\\hooks\\session-start-instincts.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${repoRoot}\\hooks\\post-compact-continue.py\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "auto|manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${repoRoot}\\hooks\\pre-compact-handoff.py\""
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "caveman@caveman": true
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "powershell -ExecutionPolicy Bypass -File \"${cavemanStatusline}\"",
+    "$comment": "${cavemanStatusline} is resolved by globbing the versioned plugin cache dir - the version hash changes on every plugin update, so it must never be hardcoded. Dropped entirely if the caveman plugin is not installed."
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": { "source": "github", "repo": "JuliusBrussee/caveman" }
+    },
+    "claude-plugins-official": {
+      "source": { "source": "git", "url": "https://github.com/anthropics/claude-plugins-official.git" }
+    }
+  }
+}

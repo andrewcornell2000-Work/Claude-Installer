@@ -1,0 +1,58 @@
+{
+  "name": "Claude-Installer",
+  "identity": "claude-code-only-provisioner",
+  "$comment": "Declarative catalog of what this installer provisions. Claude Code only - no Cursor, no Codex, no Claude Desktop. Descended from Alfred (andrewcornell2000-Work/Alfred), which targeted three harnesses from one catalog; the split targets were the source of the drift this repo exists to remove.",
+  "targets": {
+    "claude-code": {
+      "mcp": "claude mcp add --scope user",
+      "skills": "~/.claude/skills",
+      "agents": "~/.claude/agents",
+      "settings": "~/.claude/settings.json",
+      "memory": "~/.claude/CLAUDE.md",
+      "plugins": "claude plugin install"
+    }
+  },
+  "profiles": {
+    "work": {
+      "buckets": ["core", "powerbi", "data", "web", "webdev"],
+      "notes": "Default. Reproduces the verified working set. Key-gated servers (fal-ai, firecrawl, supabase) self-skip when their keys are absent."
+    },
+    "minimal": {
+      "buckets": ["core"],
+      "notes": "GitHub, context7, filesystem only. Smallest always-on tool context."
+    },
+    "analyst": {
+      "buckets": ["core", "powerbi", "data"],
+      "notes": "No browsing or webdev MCPs. Matches Alfred's old work default."
+    }
+  },
+  "prerequisites": {
+    "git": { "winget": "Git.Git", "check": "git --version" },
+    "node": { "winget": "OpenJS.NodeJS.LTS", "check": "node --version", "min": "18" },
+    "python": { "winget": "Python.Python.3.12", "check": "python --version", "min": "3.10" },
+    "uv": { "install": "pip install -U uv", "check": "uv --version", "provides": ["uvx"] },
+    "claude": { "install": "npm i -g @anthropic-ai/claude-code", "check": "claude --version" }
+  },
+  "upgrades": {
+    "claude-cli": { "kind": "npm-global", "upgrade": "npm i -g @anthropic-ai/claude-code@latest" },
+    "python-deps": { "kind": "pip", "upgrade": "pip install -U -r requirements/python-requirements.txt" },
+    "npx-mcps": { "kind": "npx", "upgrade": "resolved at spawn via @latest - nothing pinned locally" },
+    "uvx-mcps": { "kind": "uvx", "upgrade": "resolved at spawn - nothing pinned locally" },
+    "plugins": { "kind": "claude-plugin", "upgrade": "claude plugin update --all" }
+  },
+  "catalogs": {
+    "mcp": "config/mcp.json",
+    "plugins": "config/plugins.json",
+    "settings": "config/settings.template.json",
+    "memory": "config/CLAUDE.md",
+    "skills": "skills/",
+    "agents": "agents/",
+    "hooks": "hooks/"
+  },
+  "counts": {
+    "skills": 52,
+    "agents": 3,
+    "hooks": 6,
+    "mcp_servers": 15
+  }
+}

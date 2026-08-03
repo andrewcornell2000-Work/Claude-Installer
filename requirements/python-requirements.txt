@@ -1,0 +1,33 @@
+# Python packages the skills and hooks depend on.
+# Installed by Claude-Install.ps1:  pip install -U -r requirements/python-requirements.txt
+
+# CLI / runtime
+rich
+typer
+python-dotenv
+truststore
+uv
+winotify
+
+# Office and documents
+openpyxl
+python-docx
+python-pptx
+pypdf
+pywin32
+xlwings
+
+# Data
+pandas
+csvkit
+visidata
+
+# Power BI
+pbi-cli-tool>=3.11.1
+
+# LLM SDK (skills that call Claude directly)
+anthropic
+
+# Dropped from the Alfred list:
+#   excellm  -- backed the retired live-Excel MCP; replaced by @negokaz/excel-mcp-server (npx, no venv)
+#   openai   -- nothing imports it; last30days talks to OpenAI/Groq over plain urllib
