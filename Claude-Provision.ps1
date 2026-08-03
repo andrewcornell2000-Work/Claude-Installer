@@ -33,7 +33,7 @@
 param(
     [string[]]$Buckets,
     [string[]]$SkillBuckets,
-    [ValidateSet("mcp", "plugins", "skills", "agents", "hooks", "memory")]
+    [ValidateSet("mcp", "plugins", "skills", "agents", "hooks", "memory", "repos")]
     [string[]]$Only,
     [switch]$DryRun
 )
@@ -44,7 +44,7 @@ $ErrorActionPreference = "Stop"
 $RepoRoot   = $PSScriptRoot
 $ClaudeHome = Get-ClaudeHome
 $EnvMap     = Read-DotEnv (Join-Path $RepoRoot ".env")
-$Sections   = if ($Only) { $Only } else { @("mcp", "plugins", "skills", "agents", "hooks", "memory") }
+$Sections   = if ($Only) { $Only } else { @("mcp", "plugins", "skills", "agents", "hooks", "memory", "repos") }
 function Use-Section([string]$n) { return $Sections -contains $n }
 
 $Summary = [ordered]@{ added = @(); skipped = @(); failed = @() }
@@ -355,6 +355,51 @@ if (Use-Section "hooks") {
             if (-not (Test-Path $h.FullName)) { $missingHooks += $h.Name }
         }
         if ($missingHooks.Count -eq 0) { Write-OK "hook scripts present in repo (run from $RepoRoot\hooks)" }
+    }
+}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Companion repos
+# ══════════════════════════════════════════════════════════════════════════════
+if (Use-Section "repos") {
+    Write-Step "Companion repos"
+    $rcat = Read-JsonFile (Join-Path $RepoRoot "config\repos.json")
+    if (-not $rcat) { Write-Skip "config/repos.json missing" }
+    else {
+        foreach ($r in $rcat.repos) {
+            $dir = [string]$r.dir
+            if ($dir -match '^\$\{env:(.+)\}$') {
+                $resolved = Resolve-Secret -Name $Matches[1] -EnvMap $EnvMap
+                $dir = if ($resolved) { $resolved } else { [string]$r.default }
+            }
+            $dir = [Environment]::ExpandEnvironmentVariables($dir)
+
+            if (Test-Path (Join-Path $dir ".git")) {
+                if ($DryRun) { Write-OK "$($r.name) -- would pull"; continue }
+                & git -C $dir pull --ff-only 2>&1 | Out-Null
+                if ($LASTEXITCODE -eq 0) { Write-OK "$($r.name) up to date  ($dir)" }
+                else { Write-Warn2 "$($r.name) -- pull exited $LASTEXITCODE; local tree left as-is" }
+                continue
+            }
+            if (Test-Path $dir) {
+                Write-Warn2 "$($r.name) -- $dir exists but is not a git checkout; skipping"
+                Note-Skipped "$($r.name) (dir occupied)"
+                continue
+            }
+            if ($DryRun) { Write-OK "$($r.name) -- would clone to $dir  (~$($r.sizeMB) MB)"; Note-Added $r.name; continue }
+
+            # gh carries auth, so private repos clone without a credential helper.
+            Write-Info "cloning $($r.slug) (~$($r.sizeMB) MB) -- this takes a minute"
+            if (Test-CommandExists "gh") { & gh repo clone $r.slug $dir 2>&1 | Out-Null }
+            else { & git clone "https://github.com/$($r.slug).git" $dir 2>&1 | Out-Null }
+
+            if (Test-Path (Join-Path $dir ".git")) { Write-OK "$($r.name) cloned to $dir"; Note-Added $r.name }
+            else {
+                Write-Warn2 "$($r.name) -- clone failed$(if ($r.private) { ' (private repo: gh auth login)' })"
+                Write-Info  "used by: $($r.usedBy)"
+                Note-Skipped "$($r.name) (clone failed)"
+            }
+        }
     }
 }
 

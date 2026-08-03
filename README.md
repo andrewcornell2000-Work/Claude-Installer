@@ -69,7 +69,7 @@ Useful flags:
 
 Default is all five buckets. Profiles in `claude.manifest.json`: `work` (default), `analyst` (no web/webdev), `minimal` (core only).
 
-**52 skills in the repo, 35 installed by default** → `~/.claude/skills`
+**53 skills in the repo, 36 installed by default** → `~/.claude/skills`
 
 Skills are bucket-gated too, and for a different reason than MCPs: every installed skill's `description` line sits in context permanently, used or not. Bodies only load when a skill triggers.
 
@@ -78,13 +78,13 @@ Skills are bucket-gated too, and for a different reason than MCPs: every install
 | `core` | 10 | 375 | yes | planning, handoff, github, graphify |
 | `data` | 7 | 170 | yes | Excel, analysis, reconciliation, labour cost |
 | `powerbi` | 10 | 500 | yes | model editing, Power Query, reports, dataflows |
-| `webapp` | 8 | 469 | yes | building and polishing web apps |
+| `webapp` | 9 | 553 | yes | building and polishing web apps |
 | `design` | 9 | 500 | no | brand kits, mobile mockups, overlapping taste skills |
 | `web` | 8 | 365 | no | Supabase, Vercel, browsing, trend research |
 
 `webapp` is a curated slice of the design skills — component patterns, UI audit, accessibility, visual direction, reference-image generation — rather than all 17. The wider `design` bucket holds the ones with heavy overlap or a narrow use (mobile screens, logo systems, the legacy `design-taste-frontend-v1`).
 
-Default set: **35 skills, ~1,515 tokens.** All 52 ship in the repo — install a held-back bucket without re-cloning:
+Default set: **36 skills, ~1,599 tokens.** All 53 ship in the repo — install a held-back bucket without re-cloning:
 
 ```powershell
 .\Claude-Provision.ps1 -Only skills -SkillBuckets all
@@ -95,6 +95,14 @@ Deselecting a bucket archives those skills to `~/.claude/backups` rather than le
 **3 agents** → `~/.claude/agents`
 **6 hooks** → wired into `~/.claude/settings.json`
 **Plugins** → caveman, plus the official Anthropic marketplace registered
+
+**Companion repos** — cloned alongside rather than vendored, listed in `config/repos.json`:
+
+| Repo | Size | Used by |
+|---|---|---|
+| `design-inspo-library` | ~540 MB | `design-inspo` skill |
+
+114 curated web design plates on a three-axis taxonomy. Kept out of this repo because it would multiply the installer's size by 25× for content Claude only reads the index of. Cloned on first provision, fast-forwarded after. Override the location with `CLAUDE_INSPO_DIR`.
 
 ---
 

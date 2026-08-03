@@ -26,6 +26,7 @@
     "data-reconciliation": "data",
     "dataflows-authoring-cli": "powerbi",
     "dataflows-consumption-cli": "powerbi",
+    "design-inspo": "webapp",
     "design-taste-frontend": "webapp",
     "design-taste-frontend-v1": "design",
     "excel-editing": "data",

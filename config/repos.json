@@ -1,0 +1,15 @@
+{
+  "$comment": "Companion repos cloned alongside Claude-Installer rather than vendored into it. Anything large, independently versioned, or useful on its own belongs here. Claude-Provision.ps1 clones on first run and fast-forwards after that. ${env:VAR} in 'dir' resolves from .env or machine env; unset falls back to 'default'. Cloning uses gh when available so private repos work without a credential helper.",
+  "repos": [
+    {
+      "name": "design-inspo-library",
+      "slug": "andrewcornell2000-Work/design-inspo-library",
+      "dir": "${env:CLAUDE_INSPO_DIR}",
+      "default": "%USERPROFILE%\\design-inspo-library",
+      "private": true,
+      "sizeMB": 540,
+      "usedBy": "design-inspo skill",
+      "_note": "114 curated web design plates with a three-axis taxonomy. Large because it holds the images and mp4 captures. Not vendored into Claude-Installer -- it would multiply the installer's size by 25x for content Claude only reads the index of."
+    }
+  ]
+}
