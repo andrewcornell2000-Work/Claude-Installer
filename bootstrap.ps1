@@ -25,6 +25,18 @@ function Say  ([string]$m) { Write-Host "  $m" -ForegroundColor Cyan }
 function Good ([string]$m) { Write-Host "  [ OK ]  $m" -ForegroundColor Green }
 function Bad  ([string]$m) { Write-Host "  [FAIL]  $m" -ForegroundColor Red }
 
+# Windows PowerShell 5.1 wraps a native command's stderr lines as terminating
+# NativeCommandErrors when merged via `2>&1`, regardless of exit code -- so
+# under $ErrorActionPreference = "Stop" a benign stderr notice kills the whole
+# bootstrap. Route native calls that touch stderr through here.
+function Invoke-Native {
+    param([Parameter(Mandatory)][scriptblock]$Command)
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try { & $Command }
+    finally { $ErrorActionPreference = $prev }
+}
+
 Write-Host ""
 Write-Host "  ==============================================================" -ForegroundColor Blue
 Write-Host "    Claude-Installer -- bootstrap" -ForegroundColor White
@@ -38,7 +50,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         Bad "winget unavailable. Install Git manually from https://git-scm.com/download/win then re-run."
         exit 3
     }
-    & winget install --id Git.Git --silent --accept-package-agreements --accept-source-agreements | Out-Null
+    Invoke-Native { & winget install --id Git.Git --silent --accept-package-agreements --accept-source-agreements } | Out-Null
     $env:PATH = "$env:ProgramFiles\Git\cmd;$env:PATH"
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         Bad "Git still not on PATH. Open a NEW terminal and re-run this bootstrap."
@@ -54,7 +66,7 @@ $gh = Get-Command gh -ErrorAction SilentlyContinue
 
 if (Test-Path (Join-Path $Target ".git")) {
     Say "Existing checkout at $Target -- pulling..."
-    & git -C $Target pull --ff-only 2>&1 | Out-Null
+    Invoke-Native { & git -C $Target pull --ff-only 2>&1 } | Out-Null
     if ($LASTEXITCODE -ne 0) { Bad "pull failed -- check your GitHub auth (gh auth status)"; exit 4 }
     Good "updated"
 } else {
@@ -64,15 +76,15 @@ if (Test-Path (Join-Path $Target ".git")) {
     }
     Say "Cloning into $Target ..."
     if ($gh) {
-        & gh auth status 2>&1 | Out-Null
+        Invoke-Native { & gh auth status 2>&1 } | Out-Null
         if ($LASTEXITCODE -ne 0) {
             Bad "gh is installed but not signed in. Run:  gh auth login"
             exit 5
         }
-        & gh repo clone $RepoSlug $Target -- --branch $Branch 2>&1 | Out-Null
+        Invoke-Native { & gh repo clone $RepoSlug $Target -- --branch $Branch 2>&1 } | Out-Null
     } else {
         Say "gh not found -- trying plain git (needs a credential helper for a private repo)"
-        & git clone --branch $Branch $RepoUrl $Target 2>&1 | Out-Null
+        Invoke-Native { & git clone --branch $Branch $RepoUrl $Target 2>&1 } | Out-Null
     }
     if (-not (Test-Path (Join-Path $Target ".git"))) {
         Bad "clone failed. This repo is private -- install the GitHub CLI and sign in:"

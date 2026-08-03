@@ -69,15 +69,6 @@
       "_requiresCommand": "uvx",
       "_note": "Local file conversion (PDF, Office, images) to markdown."
     },
-    "longhand": {
-      "type": "stdio",
-      "command": "longhand",
-      "args": ["mcp-server"],
-      "_bucket": "data",
-      "_requires": [],
-      "_requiresCommand": "longhand",
-      "_note": "Lossless Claude Code session history. pip install -U longhand && longhand setup. Skipped if not on PATH."
-    },
 
     "playwright": {
       "type": "stdio",
@@ -105,49 +96,6 @@
       "_optionalEnv": ["PARALLEL_API_KEY"],
       "_note": "LLM-optimized web search and fetch. Set PARALLEL_API_KEY for higher rate limits."
     },
-    "firecrawl": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "firecrawl-mcp@latest"],
-      "env": { "FIRECRAWL_API_KEY": "${env:FIRECRAWL_API_KEY}" },
-      "_bucket": "web",
-      "_requires": ["FIRECRAWL_API_KEY"],
-      "_note": "Scraping and crawling. Skipped unless FIRECRAWL_API_KEY is set."
-    },
-
-    "magic": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@magicuidesign/mcp@latest"],
-      "_bucket": "webdev",
-      "_requires": [],
-      "_note": "Magic UI components - animated React/Tailwind blocks. No key required."
-    },
-    "fal-ai": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "fal-ai-mcp-server@latest"],
-      "env": { "FAL_KEY": "${env:FAL_KEY}" },
-      "_bucket": "webdev",
-      "_requires": ["FAL_KEY"],
-      "_note": "Image/video/audio generation via fal.ai. Skipped unless FAL_KEY is set."
-    },
-    "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp?project_ref=${env:SUPABASE_PROJECT_REF}",
-      "_bucket": "webdev",
-      "_requires": ["SUPABASE_PROJECT_REF"],
-      "_oauthOnFirstUse": true,
-      "_note": "OAuth on first use. Skipped unless SUPABASE_PROJECT_REF is set."
-    },
-    "vercel": {
-      "type": "http",
-      "url": "https://mcp.vercel.com",
-      "_bucket": "webdev",
-      "_requires": [],
-      "_oauthOnFirstUse": true,
-      "_note": "OAuth on first use."
-    },
     "higgsfield": {
       "type": "http",
       "url": "https://mcp.higgsfield.ai/mcp",
@@ -160,9 +108,9 @@
   "_buckets": {
     "core": "Always installed - GitHub, library docs, finance-scoped filesystem.",
     "powerbi": "Power BI semantic-model editing plus the Fabric skill pack.",
-    "data": "Analyst stack - Excel, DuckDB, markitdown, optional longhand.",
-    "web": "Browsing and search - Playwright, parallel-search, fetch, optional Firecrawl.",
-    "webdev": "SaaS and generation - Magic UI, fal.ai, Supabase, Vercel. Key-gated ones self-skip."
+    "data": "Analyst stack - Excel, DuckDB, markitdown.",
+    "web": "Browsing and search - Playwright, parallel-search, fetch.",
+    "webdev": "Higgsfield only - OAuth on first use."
   },
   "_retired": {
     "excel-mcp": "Removed. Conflicted with the npx excel server (opposite access model - closed vs open workbook). The npx @negokaz server is the one in proven use.",

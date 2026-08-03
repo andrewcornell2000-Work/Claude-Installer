@@ -136,7 +136,7 @@ if (Use-Section "mcp") {
                     if (-not $val -and $s.PSObject.Properties.Name -contains "_envDefaults" -and
                         $s._envDefaults.PSObject.Properties.Name -contains $k) { $val = [string]$s._envDefaults.$k }
                 }
-                if ($val) { $envArgs += @("--env", "$k=$val") }
+                if ($val) { $envArgs += @("-e", "$k=$val") }
                 elseif ($requires -contains $k) { $missing += $k }
             }
         }
@@ -173,14 +173,18 @@ if (Use-Section "mcp") {
                     if ($null -ne $ex) { $sargs += $ex }
                 }
             }
-            $addArgs = @("mcp", "add", "--scope", "user") + $envArgs + @($name, "--") + @($cmd) + $sargs
+            # -e/--env is variadic (commander <env...>): it greedily swallows bare
+            # tokens after it. $name must come first or "-e K=V $name" makes $name
+            # parse as a second (malformed) env value. Matches `claude mcp add
+            # my-server -e API_KEY=xxx -- npx my-mcp-server` in `claude mcp add --help`.
+            $addArgs = @("mcp", "add", "--scope", "user", $name) + $envArgs + @("--") + @($cmd) + $sargs
         }
 
         if ($DryRun) { Write-OK "$name -- would register"; Write-Info "claude $(Format-RedactedCommand -Args $addArgs)"; Note-Added $name; continue }
 
         # Remove-then-add keeps this idempotent across catalog edits.
-        & claude mcp remove $name --scope user 2>&1 | Out-Null
-        $out = & claude @addArgs 2>&1
+        Invoke-Native { & claude mcp remove $name --scope user 2>&1 } | Out-Null
+        $out = Invoke-Native { & claude @addArgs 2>&1 }
         if ($LASTEXITCODE -eq 0) { Write-OK "$name"; Note-Added $name }
         else {
             Write-Fail "$name -- claude mcp add exited $LASTEXITCODE"
@@ -200,13 +204,13 @@ if (Use-Section "plugins") {
     else {
         foreach ($m in $pcat.marketplaces) {
             if ($DryRun) { Write-OK "marketplace $($m.name) -- would add"; continue }
-            & claude plugin marketplace add $m.source 2>&1 | Out-Null
+            Invoke-Native { & claude plugin marketplace add $m.source 2>&1 } | Out-Null
             if ($LASTEXITCODE -eq 0) { Write-OK "marketplace $($m.name)" }
             else { Write-Warn2 "marketplace $($m.name) -- add exited $LASTEXITCODE (may already exist)" }
         }
         foreach ($p in $pcat.plugins) {
             if ($DryRun) { Write-OK "plugin $($p.id) -- would install"; Note-Added "plugin $($p.id)"; continue }
-            & claude plugin install $p.id 2>&1 | Out-Null
+            Invoke-Native { & claude plugin install $p.id 2>&1 } | Out-Null
             if ($LASTEXITCODE -eq 0) { Write-OK "plugin $($p.id)"; Note-Added "plugin $($p.id)" }
             else {
                 Write-Warn2 "plugin $($p.id) -- install exited $LASTEXITCODE"
@@ -376,7 +380,7 @@ if (Use-Section "repos") {
 
             if (Test-Path (Join-Path $dir ".git")) {
                 if ($DryRun) { Write-OK "$($r.name) -- would pull"; continue }
-                & git -C $dir pull --ff-only 2>&1 | Out-Null
+                Invoke-Native { & git -C $dir pull --ff-only 2>&1 } | Out-Null
                 if ($LASTEXITCODE -eq 0) { Write-OK "$($r.name) up to date  ($dir)" }
                 else { Write-Warn2 "$($r.name) -- pull exited $LASTEXITCODE; local tree left as-is" }
                 continue
@@ -390,8 +394,8 @@ if (Use-Section "repos") {
 
             # gh carries auth, so private repos clone without a credential helper.
             Write-Info "cloning $($r.slug) (~$($r.sizeMB) MB) -- this takes a minute"
-            if (Test-CommandExists "gh") { & gh repo clone $r.slug $dir 2>&1 | Out-Null }
-            else { & git clone "https://github.com/$($r.slug).git" $dir 2>&1 | Out-Null }
+            if (Test-CommandExists "gh") { Invoke-Native { & gh repo clone $r.slug $dir 2>&1 } | Out-Null }
+            else { Invoke-Native { & git clone "https://github.com/$($r.slug).git" $dir 2>&1 } | Out-Null }
 
             if (Test-Path (Join-Path $dir ".git")) { Write-OK "$($r.name) cloned to $dir"; Note-Added $r.name }
             else {

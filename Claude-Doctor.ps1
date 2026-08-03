@@ -169,7 +169,10 @@ else { Write-Warn2 "$($bad.Count) skills with bad frontmatter: $($bad -join ', '
 $moji = @()
 foreach ($f in Get-ChildItem -Path (Join-Path $ClaudeHome "skills") -Filter "*.md" -Recurse -ErrorAction SilentlyContinue) {
     $t = Get-Content -Raw -Path $f.FullName -Encoding UTF8
-    if ($t -match 'â€|â†|â”') { $moji += $f.Name }
+    # \u escapes, not literal characters: Windows PowerShell 5.1 misreads a
+    # BOM-less .ps1 file's non-ASCII bytes under the wrong codepage, which
+    # broke this line's own parsing (the mojibake-detector was mojibake).
+    if ($t -match "\u00e2\u20ac|\u00e2\u2020|\u00e2\u201d") { $moji += $f.Name }
 }
 if ($moji.Count -eq 0) { Write-OK "no mojibake in skill text"; Add-Check "skills" "encoding" "PASS" }
 else { Write-Warn2 "$($moji.Count) files with mojibake"; Add-Check "skills" "encoding" "WARN" "$($moji.Count) files" }

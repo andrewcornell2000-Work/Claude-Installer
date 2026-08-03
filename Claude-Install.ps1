@@ -52,7 +52,7 @@ function Install-ViaWinget {
         return $false
     }
     Write-Info "installing $Label via winget ($Id)..."
-    & winget install --id $Id --silent --accept-package-agreements --accept-source-agreements 2>&1 | Out-Null
+    Invoke-Native { & winget install --id $Id --silent --accept-package-agreements --accept-source-agreements 2>&1 } | Out-Null
     Update-PathFromRegistry
     if (Test-CommandExists $Check) { Write-OK "$Label installed"; return $true }
     Write-Fail "$Label install did not put '$Check' on PATH. A new terminal may be needed."
@@ -78,7 +78,7 @@ if (-not $SkipPrereqs) {
     else {
         if (Test-CommandExists "python") {
             Write-Info "installing uv via pip..."
-            & python -m pip install --upgrade --quiet uv 2>&1 | Out-Null
+            Invoke-Native { & python -m pip install --upgrade --quiet uv 2>&1 } | Out-Null
             Update-PathFromRegistry
         }
         if (Test-CommandExists "uvx") { Write-OK "uvx installed" }
@@ -93,7 +93,7 @@ if (-not $SkipPrereqs) {
             $failures += "claude"
         } else {
             Write-Info "npm i -g @anthropic-ai/claude-code ..."
-            & npm install -g "@anthropic-ai/claude-code" 2>&1 | Out-Null
+            Invoke-Native { & npm install -g "@anthropic-ai/claude-code" 2>&1 } | Out-Null
             Update-PathFromRegistry
             if (Test-CommandExists "claude") { Write-OK "claude installed  ($(Get-CommandVersion 'claude'))" }
             else { Write-Fail "claude still not on PATH after npm install."; $failures += "claude" }
@@ -106,7 +106,7 @@ if (-not $SkipPrereqs) {
     elseif (-not (Test-CommandExists "python")) { Write-Skip "python unavailable" }
     else {
         Write-Info "pip install -U -r requirements/python-requirements.txt ..."
-        & python -m pip install --upgrade --quiet -r $reqFile 2>&1 | Out-Null
+        Invoke-Native { & python -m pip install --upgrade --quiet -r $reqFile 2>&1 } | Out-Null
         if ($LASTEXITCODE -eq 0) { Write-OK "python packages installed" }
         else { Write-Warn2 "pip exited $LASTEXITCODE -- some packages may be missing. Run manually to see which." }
     }
@@ -130,7 +130,7 @@ if (Test-CommandExists "claude") {
     # state in JSON. Checking $LASTEXITCODE says "signed in" on a fresh machine.
     $authed = $false
     try {
-        $raw = (& claude auth status 2>&1 | Out-String).Trim()
+        $raw = (Invoke-Native { & claude auth status 2>&1 } | Out-String).Trim()
         if ($raw) {
             $parsed = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
             if ($parsed -and $parsed.PSObject.Properties.Name -contains "loggedIn") { $authed = [bool]$parsed.loggedIn }

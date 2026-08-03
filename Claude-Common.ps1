@@ -63,11 +63,25 @@ function Test-CommandExists {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
 }
 
+# Windows PowerShell 5.1 wraps a native command's stderr lines as terminating
+# NativeCommandErrors when merged via `2>&1` -- regardless of exit code -- so
+# under $ErrorActionPreference = "Stop" (Install/Provision use it for real
+# failures) a benign stderr notice (a pip update nag, "not found" from an
+# idempotent remove-then-add) kills the whole run. Route any native call that
+# touches stderr through here instead of raw `2>&1`.
+function Invoke-Native {
+    param([Parameter(Mandatory)][scriptblock]$Command)
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try { & $Command }
+    finally { $ErrorActionPreference = $prev }
+}
+
 function Get-CommandVersion {
     param([Parameter(Mandatory)][string]$Name, [string]$Arg = "--version")
     if (-not (Test-CommandExists $Name)) { return $null }
     try {
-        $out = & $Name $Arg 2>&1 | Select-Object -First 1
+        $out = Invoke-Native { & $Name $Arg 2>&1 } | Select-Object -First 1
         return ($out | Out-String).Trim()
     } catch { return $null }
 }
@@ -191,7 +205,7 @@ function Format-RedactedCommand {
     $out = @()
     for ($i = 0; $i -lt $Args.Count; $i++) {
         $a = $Args[$i]
-        if ($a -eq "--env" -and $i + 1 -lt $Args.Count) {
+        if ($a -eq "-e" -and $i + 1 -lt $Args.Count) {
             $pair = $Args[$i + 1]
             $eq   = $pair.IndexOf("=")
             if ($eq -gt 0) {
