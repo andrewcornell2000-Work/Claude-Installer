@@ -126,12 +126,20 @@ else {
 # ── Auth ──────────────────────────────────────────────────────────────────────
 Write-Step "Claude authentication"
 if (Test-CommandExists "claude") {
+    # `claude auth status` exits 0 whether or not you are signed in -- it reports
+    # state in JSON. Checking $LASTEXITCODE says "signed in" on a fresh machine.
     $authed = $false
-    try { & claude auth status 2>&1 | Out-Null; $authed = ($LASTEXITCODE -eq 0) } catch { }
+    try {
+        $raw = (& claude auth status 2>&1 | Out-String).Trim()
+        if ($raw) {
+            $parsed = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+            if ($parsed -and $parsed.PSObject.Properties.Name -contains "loggedIn") { $authed = [bool]$parsed.loggedIn }
+        }
+    } catch { }
     if ($authed) { Write-OK "already signed in" }
     else {
-        Write-Warn2 "not signed in"
-        Write-Info  "run:  claude auth login"
+        Write-Warn2 "NOT signed in -- MCP servers will register but Claude will not run"
+        Write-Info  "run this before using Claude Code:   claude auth login"
     }
 }
 

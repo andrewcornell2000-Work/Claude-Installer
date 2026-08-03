@@ -62,10 +62,17 @@ if (-not $NoUpgrade) {
         else { Write-Warn2 "pip exited $LASTEXITCODE" }
     }
 
+    # `claude plugin update` takes a single <plugin>, not --all. Iterate the catalog.
     if (Test-CommandExists "claude") {
-        Write-Info "claude plugin update --all ..."
-        & claude plugin update --all 2>&1 | Out-Null
-        if ($LASTEXITCODE -eq 0) { Write-OK "plugins" } else { Write-Warn2 "plugin update exited $LASTEXITCODE" }
+        $pcat = Read-JsonFile (Join-Path $RepoRoot "config\plugins.json")
+        if (-not $pcat) { Write-Skip "config/plugins.json missing -- no plugins to update" }
+        else {
+            foreach ($p in $pcat.plugins) {
+                & claude plugin update $p.id 2>&1 | Out-Null
+                if ($LASTEXITCODE -eq 0) { Write-OK "plugin $($p.id)" }
+                else { Write-Warn2 "plugin $($p.id) -- update exited $LASTEXITCODE" }
+            }
+        }
     }
 
     # npx/uvx MCP servers resolve @latest on every spawn -- nothing to upgrade here.
