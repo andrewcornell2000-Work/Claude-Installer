@@ -69,6 +69,8 @@ Useful flags:
 
 `graphify` serves a prebuilt `graph.json` over MCP. It needs the `graphify-mcp` binary (`uv tool install -U "graphifyy[mcp]"` — the `[mcp]` extra is mandatory, without it the server starts, fails to import `mcp` and shows only as "Connection closed"; catalogued in `requirements/uv-tools.txt` and installed by `Claude-Install.ps1`) **and** a graph that already exists — resolved from `GRAPHIFY_GRAPH` in `.env`, else the newest `graph.json` under `%LOCALAPPDATA%\graphify-workspace`. Before the first `/graphify` build there is nothing to serve, so the server is skipped; re-run `Claude-Provision.ps1` once a graph exists. The skill works from the CLI either way — the MCP is the cheaper query path, not a prerequisite.
 
+Note the workspace location. graphify defaults to `graphify-out/` relative to the working directory, which on a corpus that lives in OneDrive or SharePoint means the converted copy of every source document, the extraction cache and a multi-MB `graph.json` all sync back to the share. `config/CLAUDE.md` therefore pins graph output to `%LOCALAPPDATA%\graphify-workspace\<corpus-name>\` and the MCP resolver reads from there. That rule is memory text, not enforcement — nothing blocks a `graphify-out/` written into a synced folder today.
+
 Default is all five buckets. Profiles in `claude.manifest.json`: `work` (default), `analyst` (no web/webdev), `minimal` (core only).
 
 **60 skills in the repo, 43 installed by default** → `~/.claude/skills`

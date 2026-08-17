@@ -4,6 +4,40 @@
 
 When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
 
+## Graph output stays on local disk
+
+The skill writes to `graphify-out/` **relative to the current working directory**. That default is
+wrong whenever the corpus lives in a synced folder (OneDrive, SharePoint, Dropbox, Google Drive),
+and it is wrong quietly — nothing errors, the files just upload.
+
+What lands in that folder is not only the graph. `converted/` holds a full text copy of every
+source document, `cache/` holds the extraction cache, and `graph.json` plus `graph.html` run to
+several MB each. On a shared drive that republishes the entire corpus, in a second readable
+format, to everyone with access to the site.
+
+So: build every graph under `%LOCALAPPDATA%\graphify-workspace\<corpus-name>\`, on local disk, and
+pass that path **absolutely** in every command — the working directory is not the workspace, so a
+relative `graphify-out/` in any step of the skill must be substituted, not inherited. Local
+`AppData` rather than `Documents` matters on a machine with known-folder redirection turned on,
+where `Documents` is itself synced.
+
+Corollary: a corpus and its graph live on opposite sides of the sync boundary on purpose. Moving
+source files to local disk drops them out of the graph's root; moving the workspace into the synced
+tree uploads the copies. Flag either tradeoff rather than silently picking one.
+
+## No AI byproducts in synced folders
+
+Same reasoning, wider than graphify. Never create `graphify-out/`, handoff or session-note markdown,
+scratch scripts, agent-workspace dirs (`.agents/`, `.cursor/`), `node_modules/`, `__pycache__/`,
+`.venv/` or `dist/` inside a synced folder — every one of them syncs to every other user on the
+share. Keep them under a local scratch root (`C:\Dev\Scratch\<origin-name>\` on this machine), and
+give anything with an ongoing identity its own folder under `C:\Dev\<Area>\` instead. Dev projects
+that generate a dependency tree are created there from the start, not moved afterwards.
+
+Functional config is the exception and does belong in the synced tree: `CLAUDE.md`,
+`.graphifyignore`, and a `.claude/` folder holding real hooks. A per-project `.claude/` containing
+only a `settings.local.json` permission cache is clutter — do not create one.
+
 # userEmail
 
 The user's email address is ${env:CLAUDE_USER_EMAIL}.
