@@ -1,0 +1,114 @@
+{
+  "must_deny": [
+    {
+      "name": "the actual 2026-08-17 leak shape: relative mkdir from a synced cwd",
+      "tool": "PowerShell",
+      "cwd": "C:\\Users\\ACO324\\OneDrive - Maersk Group",
+      "command": "New-Item -ItemType Directory -Force -Path graphify-out | Out-Null"
+    },
+    {
+      "name": "graphify-out written with an explicit OneDrive path",
+      "tool": "PowerShell",
+      "cwd": "C:\\Dev",
+      "command": "New-Item -ItemType Directory -Force -Path 'C:\\Users\\ACO324\\OneDrive - Maersk Group\\graphify-out'"
+    },
+    {
+      "name": "python Path.write_text into a synced graphify-out",
+      "tool": "Bash",
+      "cwd": "C:\\Users\\ACO324\\OneDrive - Maersk Group",
+      "command": "python -c \"from pathlib import Path; Path('graphify-out/graph.json').write_text('{}')\""
+    },
+    {
+      "name": "npm install creating node_modules under SharePoint sync",
+      "tool": "Bash",
+      "cwd": "C:\\Users\\ACO324\\SharePoint - Maersk\\project",
+      "command": "npm install"
+    },
+    {
+      "name": "git clone of a companion repo directly into OneDrive",
+      "tool": "PowerShell",
+      "cwd": "C:\\Dev",
+      "command": "git clone https://github.com/example/repo 'C:\\Users\\ACO324\\OneDrive - Maersk Group\\node_modules\\repo'"
+    },
+    {
+      "name": "HANDOFF.md written via Out-File under Dropbox",
+      "tool": "PowerShell",
+      "cwd": "C:\\Users\\ACO324\\Dropbox\\notes",
+      "command": "'session summary' | Out-File HANDOFF.md"
+    },
+    {
+      "name": "Write tool creating graphify-out file under OneDrive",
+      "tool": "Write",
+      "cwd": "C:\\Dev",
+      "file_path": "C:\\Users\\ACO324\\OneDrive - Maersk Group\\graphify-out\\manifest.json"
+    },
+    {
+      "name": "Write tool creating AGENTS.md under a mapped OneDrive path, relative file_path",
+      "tool": "Write",
+      "cwd": "C:\\Users\\ACO324\\OneDrive - Maersk Group\\Project",
+      "file_path": "AGENTS.md"
+    },
+    {
+      "name": "bare redirection into __pycache__ under OneDrive",
+      "tool": "Bash",
+      "cwd": "C:\\Users\\ACO324\\OneDrive - Maersk Group",
+      "command": "echo '' > __pycache__/marker.txt"
+    }
+  ],
+  "must_allow": [
+    {
+      "name": "same mkdir, local cwd, no leak",
+      "tool": "PowerShell",
+      "cwd": "C:\\Dev\\Scratch",
+      "command": "New-Item -ItemType Directory -Force -Path graphify-out | Out-Null"
+    },
+    {
+      "name": "read-only listing of an existing graphify-out under OneDrive",
+      "tool": "PowerShell",
+      "cwd": "C:\\Users\\ACO324\\OneDrive - Maersk Group",
+      "command": "Get-ChildItem graphify-out -Recurse"
+    },
+    {
+      "name": "npm install in a non-synced dev folder",
+      "tool": "Bash",
+      "cwd": "C:\\Dev\\LabourPlanning",
+      "command": "npm install"
+    },
+    {
+      "name": "ambiguous 'dist' folder under OneDrive is not blocked (ambiguous name, by design)",
+      "tool": "PowerShell",
+      "cwd": "C:\\Users\\ACO324\\OneDrive - Maersk Group",
+      "command": "New-Item -ItemType Directory -Force -Path dist"
+    },
+    {
+      "name": "Write tool targeting a normal deliverable in OneDrive",
+      "tool": "Write",
+      "cwd": "C:\\Dev",
+      "file_path": "C:\\Users\\ACO324\\OneDrive - Maersk Group\\Report Final.xlsx"
+    },
+    {
+      "name": "Write tool creating a scratch file locally under C:\\Dev",
+      "tool": "Write",
+      "cwd": "C:\\Dev",
+      "file_path": "C:\\Dev\\Scratch\\notes\\HANDOFF.md"
+    },
+    {
+      "name": "Edit tool is out of scope even under OneDrive",
+      "tool": "Edit",
+      "cwd": "C:\\Users\\ACO324\\OneDrive - Maersk Group",
+      "file_path": "C:\\Users\\ACO324\\OneDrive - Maersk Group\\graphify-out\\manifest.json"
+    },
+    {
+      "name": "non-shell, non-Write tool is ignored",
+      "tool": "Read",
+      "cwd": "C:\\Users\\ACO324\\OneDrive - Maersk Group",
+      "file_path": "C:\\Users\\ACO324\\OneDrive - Maersk Group\\graphify-out\\manifest.json"
+    },
+    {
+      "name": "the actual self-trip incident: commit message heredoc describing this hook, from a synced cwd",
+      "tool": "Bash",
+      "cwd": "C:\\Users\\ACO324\\OneDrive - Maersk Group\\Documents\\throwaway",
+      "command": "cd \"C:/Users/ACO324/Claude-Installer\" && git commit -q -F - <<'EOF'\nAdd sync-guard hook\n\nDenies mkdir/New-Item/npm install/git clone creating graphify-out or\nnode_modules under OneDrive, and a bare > redirect writing HANDOFF.md.\nEOF\ngit push -q origin main"
+    }
+  ]
+}

@@ -21,6 +21,14 @@ relative `graphify-out/` in any step of the skill must be substituted, not inher
 `AppData` rather than `Documents` matters on a machine with known-folder redirection turned on,
 where `Documents` is itself synced.
 
+This is enforced, not just written down. A `PreToolUse` hook
+(`hooks/sync-guard/sync_guard.py`, matcher `Bash|PowerShell|Write`) denies creating `graphify-out`
+or any other named AI/tool byproduct under a path or working directory that names a sync provider
+(OneDrive, SharePoint, Dropbox, Google Drive, iCloud Drive). It exists because the rule above,
+written but unenforced, still let a `graphify-out\` land at the OneDrive root on 2026-08-17 — 293
+files, ~430 MB, synced to every user on the SharePoint site before anyone noticed. See
+`hooks/sync-guard/README.md` for exactly what it blocks and why.
+
 Corollary: a corpus and its graph live on opposite sides of the sync boundary on purpose. Moving
 source files to local disk drops them out of the graph's root; moving the workspace into the synced
 tree uploads the copies. Flag either tradeoff rather than silently picking one.

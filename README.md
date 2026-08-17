@@ -97,7 +97,10 @@ Default set: **43 skills, ~2,522 tokens.** All 60 ship in the repo — install a
 Deselecting a bucket archives those skills to `~/.claude/backups` rather than leaving them to cost context.
 
 **3 agents** → `~/.claude/agents`
-**7 hooks** → wired into `~/.claude/settings.json`, including `hooks/edr-guard/` — a `PreToolUse` guard on Bash and PowerShell that denies the command shapes corporate EDR scores as ransomware (kill-then-delete in one call, recursive deletes under OneDrive or the profile content folders, multi-PID `Stop-Process`). It normalises backtick/caret escaping and decodes `-EncodedCommand` before matching. Its own suite: `python hooks/edr-guard/run_tests.py` (49 cases, no subprocess fixtures on any command line).
+**8 hooks** → wired into `~/.claude/settings.json`, including two guard rails on the shell tools:
+
+- `hooks/edr-guard/` — `PreToolUse` on Bash and PowerShell. Denies the command shapes corporate EDR scores as ransomware (kill-then-delete in one call, recursive deletes under OneDrive or the profile content folders, multi-PID `Stop-Process`). Normalises backtick/caret escaping and decodes `-EncodedCommand` before matching. Suite: `python hooks/edr-guard/run_tests.py` (49 cases).
+- `hooks/sync-guard/` — `PreToolUse` on Bash, PowerShell and Write. Denies creating an AI/tool byproduct (`graphify-out`, `node_modules`, `.venv`, `.agents`, `.cursor`, `HANDOFF*.md`, …) under a folder that names a sync provider (OneDrive, SharePoint, Dropbox, Google Drive, iCloud Drive) — checked against the command *and* the tool call's cwd, since the incident that motivated it was a relative path run from a synced working directory. Suite: `python hooks/sync-guard/run_tests.py` (21 cases).
 **Plugins** → caveman, plus the official Anthropic marketplace registered
 
 **Companion repos** — cloned alongside rather than vendored, listed in `config/repos.json`:

@@ -11,6 +11,16 @@
             "$comment": "Hard-blocks the command shapes corporate EDR scores as ransomware: kill-then-delete in one call, recursive deletes under OneDrive or the profile content folders, multi-PID Stop-Process. Normalises backtick/caret escaping and decodes -EncodedCommand first. Test suite: python hooks/edr-guard/run_tests.py"
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${repoRoot}\\hooks\\sync-guard\\sync_guard.py\"",
+            "$comment": "Hard-blocks creating AI/tool byproducts (graphify-out, node_modules, __pycache__, .venv, .agents, .cursor, .alfred, ai-workspace, HANDOFF*.md, AGENTS.md) under a synced folder (OneDrive, SharePoint, Dropbox, Google Drive, iCloud Drive) - checks the tool call's cwd too, since the proven leak was a relative path from a synced working directory. Test suite: python hooks/sync-guard/run_tests.py"
+          }
+        ]
       }
     ],
     "SessionStart": [
