@@ -90,13 +90,12 @@
       "_note": "Single known URL to markdown. Not for library docs (context7) or search. mcp pinned to 1.29.0: mcp-server-fetch imports McpError, renamed/removed in mcp 2.0.0 (breaking release, uvx resolves latest by default)."
     },
     "parallel-search": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "mcp-remote@latest", "https://search.parallel.ai/mcp"],
+      "type": "http",
+      "url": "https://search.parallel.ai/mcp",
       "_bucket": "web",
       "_requires": [],
       "_optionalEnv": ["PARALLEL_API_KEY"],
-      "_note": "LLM-optimized web search and fetch. Set PARALLEL_API_KEY for higher rate limits."
+      "_note": "LLM-optimized web search and fetch. Native Streamable HTTP server - registered directly, NOT through `npx mcp-remote`. The shim was in front of it until 2026-08-17 and failed with '-32000: Connection closed'; the endpoint itself answers initialize unauthenticated (Parallel Web Search MCP Server 1.27.0), so the shim was the only broken part. Set PARALLEL_API_KEY for higher rate limits."
     },
     "higgsfield": {
       "type": "http",
