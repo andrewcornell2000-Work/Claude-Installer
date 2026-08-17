@@ -1,0 +1,57 @@
+{
+  "_note": "Test fixtures for edr-guard.py. These strings are DATA ONLY. The test runner imports the guard as a Python module and evaluates regexes against them in-process. Nothing here is ever executed, passed to a shell, or placed on a process command line, so running the suite cannot itself trigger an EDR detection. Kept as .json (not .ps1/.cmd) so no script scanner treats it as runnable.",
+
+  "must_deny": [
+    {
+      "name": "original 2026-08-10 alert command",
+      "command": "Get-Process -Id 3656,23176,24628,28860 -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue\nStart-Sleep -Seconds 1\nRemove-Item -Path \"C:\\Users\\ACO324\\OneDrive - Maersk Group\\Desktop\\New folder\" -Recurse -Force -Confirm:$false"
+    },
+    { "name": "recursive delete on OneDrive path", "command": "Remove-Item -Path \"C:\\Users\\ACO324\\OneDrive - Maersk Group\\Desktop\\Test\" -Recurse -Force" },
+    { "name": "posix rm -rf on Desktop", "command": "rm -rf \"/c/Users/ACO324/Desktop/foo\"" },
+    { "name": "posix rm -rf on Documents backslash", "command": "rm -rf \"C:\\Users\\ACO324\\Documents\\stuff\"" },
+    { "name": "multiple PIDs to Stop-Process", "command": "Stop-Process -Id 100,200,300 -Force" },
+    { "name": "multiple PIDs via alias spps", "command": "spps -Id 100,200 -Force" },
+    { "name": "taskkill two PIDs", "command": "taskkill /F /pid 100 /pid 200" },
+    { "name": "backtick-obfuscated Remove-Item on OneDrive", "command": "Remo`ve-It`em -Path 'C:\\Users\\ACO324\\OneDrive - Maersk Group\\Desktop\\x' -Recurse -Force" },
+    { "name": "env var path USERPROFILE Desktop", "command": "Remove-Item $env:USERPROFILE\\Desktop\\proj -Recurse -Force" },
+    { "name": "tilde path Documents", "command": "Remove-Item ~\\Documents\\old -Recurse -Force" },
+    { "name": "percent expansion USERPROFILE", "command": "rd /s /q %USERPROFILE%\\Desktop\\junk" },
+    { "name": "piped recursive enumeration to delete", "command": "Get-ChildItem 'C:\\Users\\ACO324\\OneDrive - Maersk Group\\Desktop' -Recurse | Remove-Item -Force" },
+    { "name": "gci alias piped to ri alias", "command": "gci $env:USERPROFILE\\Desktop -Recurse | ri -Force" },
+    { "name": "wildcard sweep of Desktop", "command": "Remove-Item 'C:\\Users\\ACO324\\Desktop\\*' -Force" },
+    { "name": "dotnet recursive directory delete", "command": "[IO.Directory]::Delete('C:\\Users\\ACO324\\OneDrive - Maersk Group\\Desktop\\x', $true)" },
+    { "name": "wmic process delete plus del", "command": "wmic process where name='excel.exe' delete && del C:\\Users\\ACO324\\Desktop\\a.txt" },
+    { "name": "dotnet Kill() plus delete", "command": "[Diagnostics.Process]::GetProcessesByName('excel') | ForEach-Object { $_.Kill() }; Remove-Item C:\\Dev\\tmp\\a.txt" },
+    { "name": "shadow copy deletion", "command": "vssadmin delete shadows /all /quiet" },
+    { "name": "backup catalog deletion", "command": "wbadmin delete catalog -quiet" },
+    { "name": "recovery disabled via bcdedit", "command": "bcdedit /set {default} recoveryenabled No" },
+    { "name": "event log cleared", "command": "wevtutil cl Security" },
+    { "name": "free space wiped", "command": "cipher /w:C" },
+    { "name": "usn journal deleted", "command": "fsutil usn deletejournal /D C:" },
+    { "name": "defender realtime monitoring disabled", "command": "Set-MpPreference -DisableRealtimeMonitoring $true" },
+    { "name": "defender exclusion added", "command": "Add-MpPreference -ExclusionPath 'C:\\Users\\ACO324\\Desktop'" },
+    { "name": "base64 decode piped to iex", "command": "$p=[Convert]::FromBase64String($b); iex ([Text.Encoding]::UTF8.GetString($p))" },
+    { "name": "recursive force delete on unknown path", "command": "Remove-Item D:\\SharedData\\archive -Recurse -Force" },
+    { "name": "encoded command carrying an unsafe payload", "command": "powershell -EncodedCommand UgBlAG0AbwB2AGUALQBJAHQAZQBtACAAJwBDADoAXABVAHMAZQByAHMAXABBAEMATwAzADIANABcAEQAZQBzAGsAdABvAHAAXAB4ACcAIAAtAFIAZQBjAHUAcgBzAGUAIAAtAEYAbwByAGMAZQA=" }
+  ],
+
+  "must_allow": [
+    { "name": "single file delete in Dev", "command": "Remove-Item -Path 'C:\\Dev\\Scratch\\note.txt' -Force" },
+    { "name": "directory listing", "command": "Get-ChildItem 'C:\\Users\\ACO324\\OneDrive - Maersk Group\\Desktop'" },
+    { "name": "recursive delete under C:\\Dev", "command": "Remove-Item C:\\Dev\\Scratch\\tmp -Recurse -Force" },
+    { "name": "node_modules cleanup", "command": "rm -rf node_modules" },
+    { "name": "build output cleanup", "command": "Remove-Item .\\dist -Recurse -Force" },
+    { "name": "temp cleanup", "command": "Remove-Item $env:TEMP\\claude\\old -Recurse -Force" },
+    { "name": "npm build", "command": "npm run build" },
+    { "name": "single named process stopped", "command": "Stop-Process -Name notepad" },
+    { "name": "git status", "command": "git status --short" },
+    { "name": "git rm single file", "command": "git rm src/old.ts" },
+    { "name": "python script run", "command": "python C:\\Dev\\ClaudeGuards\\run_tests.py" },
+    { "name": "reading a file that mentions skills", "command": "Get-Content C:\\Users\\ACO324\\.claude\\skills\\graphify\\SKILL.md" },
+    { "name": "copy into OneDrive", "command": "Copy-Item C:\\Dev\\out\\report.xlsx 'C:\\Users\\ACO324\\OneDrive - Maersk Group\\Desktop\\report.xlsx' -Force" },
+    { "name": "move out of OneDrive instead of deleting", "command": "Move-Item 'C:\\Users\\ACO324\\OneDrive - Maersk Group\\Desktop\\Test' C:\\Dev\\Scratch\\Test" },
+    { "name": "graphify update", "command": "graphify --update --root 'C:\\Users\\ACO324\\OneDrive - Maersk Group'" },
+    { "name": "pip install", "command": "pip install openpyxl" },
+    { "name": "claude wrapper preamble only", "command": "$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'; (Get-Location).Path | Out-File -FilePath 'C:\\Users\\ACO324\\AppData\\Local\\Temp\\claude\\claude-pwd-ps-1' -Encoding utf8 -NoNewline" }
+  ]
+}

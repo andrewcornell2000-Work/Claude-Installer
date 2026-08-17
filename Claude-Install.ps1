@@ -110,6 +110,26 @@ if (-not $SkipPrereqs) {
         if ($LASTEXITCODE -eq 0) { Write-OK "python packages installed" }
         else { Write-Warn2 "pip exited $LASTEXITCODE -- some packages may be missing. Run manually to see which." }
     }
+
+    Write-Step "uv tools  (isolated Python CLIs)"
+    $uvToolsFile = Join-Path $RepoRoot "requirements\uv-tools.txt"
+    if (-not (Test-Path $uvToolsFile)) { Write-Skip "requirements/uv-tools.txt not found" }
+    elseif (-not (Test-CommandExists "uv")) { Write-Skip "uv unavailable -- graphify will not be installed" }
+    else {
+        foreach ($line in (Get-Content $uvToolsFile)) {
+            $line = $line.Trim()
+            if (-not $line -or $line.StartsWith("#")) { continue }
+            $parts = $line -split ":", 3
+            $pkg = $parts[0].Trim()
+            $cli = if ($parts.Count -ge 2) { $parts[1].Trim() } else { $pkg }
+            if (Test-CommandExists $cli) { Write-OK "$cli present  ($(Get-CommandVersion $cli))"; continue }
+            Write-Info "uv tool install -U $pkg ..."
+            Invoke-Native { & uv tool install --upgrade $pkg 2>&1 } | Out-Null
+            Update-PathFromRegistry
+            if (Test-CommandExists $cli) { Write-OK "$cli installed  ($(Get-CommandVersion $cli))" }
+            else { Write-Warn2 "$cli not on PATH after 'uv tool install $pkg' -- run 'uv tool update-shell', open a new terminal, re-run." }
+        }
+    }
 }
 
 # ── .env ──────────────────────────────────────────────────────────────────────

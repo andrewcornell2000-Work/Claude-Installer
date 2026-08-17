@@ -1,6 +1,18 @@
 {
   "$comment": "Template for ~/.claude/settings.json. ${repoRoot} is replaced with the Claude-Installer clone path at provision time. Claude-Provision.ps1 MERGES this into any existing settings.json rather than overwriting - your own keys survive.",
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${repoRoot}\\hooks\\edr-guard\\edr_guard.py\"",
+            "$comment": "Hard-blocks the command shapes corporate EDR scores as ransomware: kill-then-delete in one call, recursive deletes under OneDrive or the profile content folders, multi-PID Stop-Process. Normalises backtick/caret escaping and decodes -EncodedCommand first. Test suite: python hooks/edr-guard/run_tests.py"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "startup|resume",

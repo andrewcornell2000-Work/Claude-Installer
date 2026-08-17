@@ -57,34 +57,36 @@ Useful flags:
 
 ## What gets installed
 
-**16 MCP servers**, bucket-gated. Anything missing a key or a runtime is skipped with a printed reason rather than registered broken.
+**11 MCP servers**, bucket-gated. Anything missing a key or a runtime is skipped with a printed reason rather than registered broken.
 
 | Bucket | Servers |
 |---|---|
-| `core` | github, context7, filesystem |
+| `core` | github, context7, filesystem, graphify |
 | `powerbi` | powerbi-modeling-mcp |
-| `data` | excel, duckdb, markitdown, longhand |
-| `web` | playwright, fetch, parallel-search, firecrawl |
-| `webdev` | magic, fal-ai, supabase, vercel, higgsfield |
+| `data` | excel, duckdb, markitdown |
+| `web` | fetch, parallel-search |
+| `webdev` | higgsfield |
+
+`graphify` serves a prebuilt `graph.json` over MCP. It needs the `graphify-mcp` binary (`uv tool install -U "graphifyy[mcp]"` — the `[mcp]` extra is mandatory, without it the server starts, fails to import `mcp` and shows only as "Connection closed"; catalogued in `requirements/uv-tools.txt` and installed by `Claude-Install.ps1`) **and** a graph that already exists — resolved from `GRAPHIFY_GRAPH` in `.env`, else the newest `graph.json` under `%LOCALAPPDATA%\graphify-workspace`. Before the first `/graphify` build there is nothing to serve, so the server is skipped; re-run `Claude-Provision.ps1` once a graph exists. The skill works from the CLI either way — the MCP is the cheaper query path, not a prerequisite.
 
 Default is all five buckets. Profiles in `claude.manifest.json`: `work` (default), `analyst` (no web/webdev), `minimal` (core only).
 
-**53 skills in the repo, 36 installed by default** → `~/.claude/skills`
+**60 skills in the repo, 43 installed by default** → `~/.claude/skills`
 
 Skills are bucket-gated too, and for a different reason than MCPs: every installed skill's `description` line sits in context permanently, used or not. Bodies only load when a skill triggers.
 
 | Bucket | Skills | ~tokens | Default | |
 |---|---|---|---|---|
-| `core` | 10 | 375 | yes | planning, handoff, github, graphify |
-| `data` | 7 | 170 | yes | Excel, analysis, reconciliation, labour cost |
-| `powerbi` | 10 | 500 | yes | model editing, Power Query, reports, dataflows |
-| `webapp` | 9 | 553 | yes | building and polishing web apps |
-| `design` | 9 | 500 | no | brand kits, mobile mockups, overlapping taste skills |
-| `web` | 8 | 365 | no | Supabase, Vercel, browsing, trend research |
+| `core` | 13 | 820 | yes | planning, handoff, github, graphify, ambition/parallelism reflexes |
+| `data` | 11 | 644 | yes | Excel, analysis, reconciliation, labour cost, spreadsheet verification gates |
+| `powerbi` | 10 | 503 | yes | model editing, Power Query, reports, dataflows |
+| `webapp` | 9 | 555 | yes | building and polishing web apps |
+| `design` | 9 | 503 | no | brand kits, mobile mockups, overlapping taste skills |
+| `web` | 8 | 368 | no | Supabase, Vercel, browsing, trend research |
 
 `webapp` is a curated slice of the design skills — component patterns, UI audit, accessibility, visual direction, reference-image generation — rather than all 17. The wider `design` bucket holds the ones with heavy overlap or a narrow use (mobile screens, logo systems, the legacy `design-taste-frontend-v1`).
 
-Default set: **36 skills, ~1,599 tokens.** All 53 ship in the repo — install a held-back bucket without re-cloning:
+Default set: **43 skills, ~2,522 tokens.** All 60 ship in the repo — install a held-back bucket without re-cloning:
 
 ```powershell
 .\Claude-Provision.ps1 -Only skills -SkillBuckets all
@@ -93,7 +95,7 @@ Default set: **36 skills, ~1,599 tokens.** All 53 ship in the repo — install a
 Deselecting a bucket archives those skills to `~/.claude/backups` rather than leaving them to cost context.
 
 **3 agents** → `~/.claude/agents`
-**6 hooks** → wired into `~/.claude/settings.json`
+**7 hooks** → wired into `~/.claude/settings.json`, including `hooks/edr-guard/` — a `PreToolUse` guard on Bash and PowerShell that denies the command shapes corporate EDR scores as ransomware (kill-then-delete in one call, recursive deletes under OneDrive or the profile content folders, multi-PID `Stop-Process`). It normalises backtick/caret escaping and decodes `-EncodedCommand` before matching. Its own suite: `python hooks/edr-guard/run_tests.py` (49 cases, no subprocess fixtures on any command line).
 **Plugins** → caveman, plus the official Anthropic marketplace registered
 
 **Companion repos** — cloned alongside rather than vendored, listed in `config/repos.json`:

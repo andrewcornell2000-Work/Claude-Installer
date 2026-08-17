@@ -31,11 +31,13 @@
     "node": { "winget": "OpenJS.NodeJS.LTS", "check": "node --version", "min": "18" },
     "python": { "winget": "Python.Python.3.12", "check": "python --version", "min": "3.10" },
     "uv": { "install": "pip install -U uv", "check": "uv --version", "provides": ["uvx"] },
+    "graphify": { "install": "uv tool install -U \"graphifyy[mcp]\"", "check": "graphify --version", "provides": ["graphify", "graphify-mcp"], "catalog": "requirements/uv-tools.txt" },
     "claude": { "install": "npm i -g @anthropic-ai/claude-code", "check": "claude --version" }
   },
   "upgrades": {
     "claude-cli": { "kind": "npm-global", "upgrade": "npm i -g @anthropic-ai/claude-code@latest" },
     "python-deps": { "kind": "pip", "upgrade": "pip install -U -r requirements/python-requirements.txt" },
+    "uv-tools": { "kind": "uv-tool", "upgrade": "uv tool upgrade --all" },
     "npx-mcps": { "kind": "npx", "upgrade": "resolved at spawn via @latest - nothing pinned locally" },
     "uvx-mcps": { "kind": "uvx", "upgrade": "resolved at spawn - nothing pinned locally" },
     "plugins": { "kind": "claude-plugin", "upgrade": "claude plugin update --all" }
@@ -52,14 +54,14 @@
   "skill_buckets": {
     "catalog": "skills/_buckets.json",
     "default": ["core", "data", "powerbi", "webapp"],
-    "$comment": "Gated separately from MCP buckets. A skill's description line is a permanent context cost whether or not it is ever used; its body loads only on trigger. Default set is 36 of 53 skills, about 1,599 tokens."
+    "$comment": "Gated separately from MCP buckets. A skill's description line is a permanent context cost whether or not it is ever used; its body loads only on trigger. Default set is 43 of 60 skills."
   },
   "companion_repos": "config/repos.json",
   "counts": {
-    "skills_in_repo": 53,
-    "skills_installed_by_default": 36,
+    "skills_in_repo": 60,
+    "skills_installed_by_default": 43,
     "agents": 3,
-    "hooks": 6,
+    "hooks": 7,
     "mcp_servers": 11,
     "companion_repos": 1
   }

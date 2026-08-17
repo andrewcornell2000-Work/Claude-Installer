@@ -75,6 +75,7 @@ $Tokens = @{
     financeDir         = Resolve-FinanceDir -EnvMap $EnvMap
     powerBiMcp         = Resolve-PowerBiMcp
     cavemanStatusline  = Resolve-CavemanStatusline
+    graphifyGraph      = Resolve-GraphifyGraph -EnvMap $EnvMap
 }
 
 # ── Buckets ───────────────────────────────────────────────────────────────────

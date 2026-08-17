@@ -181,6 +181,25 @@ function Resolve-CavemanStatusline {
     return $null
 }
 
+# graphify's MCP server serves ONE prebuilt graph.json, so the path is machine state, not a
+# repo path. Returns $null when no graph has been built yet -- the server is then skipped, which
+# is correct: `graphify-mcp` against a missing graph fails at startup and shows as a broken server.
+function Resolve-GraphifyGraph {
+    param([hashtable]$EnvMap)
+    $explicit = Resolve-Secret -Name "GRAPHIFY_GRAPH" -EnvMap $EnvMap
+    if ($explicit -and (Test-Path $explicit)) { return $explicit }
+    if ($explicit) { Write-Warn2 "GRAPHIFY_GRAPH is set but does not exist: $explicit" }
+
+    $workspace = Join-Path $env:LOCALAPPDATA "graphify-workspace"
+    if (-not (Test-Path $workspace)) { return $null }
+    $graph = Get-ChildItem -Path $workspace -Directory -ErrorAction SilentlyContinue |
+             ForEach-Object { Join-Path $_.FullName "graph.json" } |
+             Where-Object { Test-Path $_ } |
+             Sort-Object { (Get-Item $_).LastWriteTime } -Descending |
+             Select-Object -First 1
+    return $graph
+}
+
 function Expand-PathTokens {
     # -JsonEscape when substituting into raw JSON text: Windows paths are full of
     # backslashes, and C:\Users lands as the invalid escape \U without it.

@@ -1,0 +1,11 @@
+# Standalone Python CLIs installed into their own venvs by Claude-Install.ps1:
+#   uv tool install -U <package>
+# Format: package-name:cli-command:description
+# These are NOT pip-installed into the system Python - they ship console scripts that
+# must stay isolated from the pip requirements set.
+
+# The [mcp] extra is NOT optional here: without it graphify-mcp starts, fails to import `mcp`,
+# and Claude reports the server as "Connection closed" with no other clue. Verified against
+# mcp 2.0.0 -- graphify's serve.py does not use the pre-2.0 decorator API that forced the
+# mcp==1.29.0 pins on the uvx servers in config/mcp.json.
+graphifyy[mcp]:graphify:Knowledge-graph builder behind the graphify skill. Also provides graphify-mcp, the stdio MCP server registered by config/mcp.json.

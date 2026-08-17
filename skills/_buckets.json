@@ -7,8 +7,8 @@
     "webapp"
   ],
   "_buckets": {
-    "core": "Workflow and repo skills. Planning, handoff, token efficiency, github, graphify.",
-    "data": "Analyst stack. Excel, data analysis, reconciliation, labour cost forecasting.",
+    "core": "Workflow and repo skills. Planning, handoff, token efficiency, github, graphify, ambition and parallelism reflexes, script cost checks.",
+    "data": "Analyst stack. Excel, data analysis, reconciliation, labour cost forecasting, plus the spreadsheet verification gates (prove-the-row, prove-it-moves, slop-gate, workbook-taste).",
     "powerbi": "Power BI and Fabric. Model editing, Power Query, report authoring, dataflows.",
     "design": "Wider visual/brand design. Overlapping taste skills, mobile screen mockups, brand kits, legacy v1. Held back by default -- enable with -SkillBuckets.",
     "web": "SaaS and browsing. Supabase, Vercel, browser automation, trend research. Held back by default.",
@@ -33,6 +33,7 @@
     "excel-financial-models": "data",
     "excel-pack-safety": "data",
     "fabriciq": "powerbi",
+    "fearless": "core",
     "frontend-design": "webapp",
     "full-output-enforcement": "web",
     "github": "core",
@@ -50,6 +51,7 @@
     "last30days": "web",
     "minimalist-ui": "design",
     "office-mastery": "data",
+    "parallel-first": "core",
     "power-query-transformations": "powerbi",
     "powerbi-custom-visual-development": "powerbi",
     "powerbi-model-editing": "powerbi",
@@ -57,16 +59,21 @@
     "powerbi-report-design": "powerbi",
     "powerquery-column-errors": "powerbi",
     "prompt-handoff": "core",
+    "prove-it-moves": "data",
+    "prove-the-row": "data",
     "redesign-existing-projects": "webapp",
     "repo-scout": "core",
+    "script-hot-loops": "core",
     "semantic-model-authoring": "powerbi",
     "sharepoint-graph": "core",
+    "slop-gate": "data",
     "stitch-design-taste": "design",
     "supabase": "web",
     "supabase-postgres-best-practices": "web",
     "ui-design-brain": "webapp",
     "vercel": "web",
     "web-release-hardening": "web",
-    "web-search": "web"
+    "web-search": "web",
+    "workbook-taste": "data"
   }
 }

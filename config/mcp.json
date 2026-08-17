@@ -30,6 +30,16 @@
       "_requires": [],
       "_note": "Scoped to the finance OneDrive folder only. Use native Read/Grep for repo code."
     },
+    "graphify": {
+      "type": "stdio",
+      "command": "graphify-mcp",
+      "args": ["${graphifyGraph}"],
+      "_bucket": "core",
+      "_requires": [],
+      "_requiresCommand": "graphify-mcp",
+      "_requiresToken": "graphifyGraph",
+      "_note": "Query the prebuilt knowledge graph as tools instead of shelling out to the graphify CLI. Binary comes from `uv tool install \"graphifyy[mcp]\"` - the [mcp] extra is mandatory, without it the server starts and dies on `ModuleNotFoundError: mcp` (see requirements/uv-tools.txt); the graph path resolves from GRAPHIFY_GRAPH in .env, else the newest graph.json under %LOCALAPPDATA%\\graphify-workspace. Skipped until a graph exists - build one with /graphify first, then re-run Claude-Provision.ps1."
+    },
 
     "powerbi-modeling-mcp": {
       "type": "stdio",
@@ -54,11 +64,11 @@
     "duckdb": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["mcp-server-duckdb", "--db-path", "${dataDir}\\analytics.duckdb"],
+      "args": ["--with", "mcp==1.29.0", "mcp-server-duckdb", "--db-path", "${dataDir}\\analytics.duckdb"],
       "_bucket": "data",
       "_requires": [],
       "_requiresCommand": "uvx",
-      "_note": "SQL over CSV, Parquet, Excel exports and the local analytics DB. Path is repo-local and stable across sessions."
+      "_note": "SQL over CSV, Parquet, Excel exports and the local analytics DB. Path is repo-local and stable across sessions. mcp pinned to 1.29.0: mcp-server-duckdb 1.1.0 calls the pre-2.0 @server.list_resources() decorator API, which mcp 2.0.0 removed (breaking release, uvx resolves latest by default)."
     },
     "markitdown": {
       "type": "stdio",
@@ -70,22 +80,14 @@
       "_note": "Local file conversion (PDF, Office, images) to markdown."
     },
 
-    "playwright": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest", "--browser", "chromium"],
-      "_bucket": "web",
-      "_requires": [],
-      "_note": "Browser automation. No key needed."
-    },
     "fetch": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["mcp-server-fetch"],
+      "args": ["--with", "mcp==1.29.0", "mcp-server-fetch"],
       "_bucket": "web",
       "_requires": [],
       "_requiresCommand": "uvx",
-      "_note": "Single known URL to markdown. Not for library docs (context7) or search."
+      "_note": "Single known URL to markdown. Not for library docs (context7) or search. mcp pinned to 1.29.0: mcp-server-fetch imports McpError, renamed/removed in mcp 2.0.0 (breaking release, uvx resolves latest by default)."
     },
     "parallel-search": {
       "type": "stdio",
@@ -106,10 +108,10 @@
     }
   },
   "_buckets": {
-    "core": "Always installed - GitHub, library docs, finance-scoped filesystem.",
+    "core": "Always installed - GitHub, library docs, finance-scoped filesystem, graphify graph queries.",
     "powerbi": "Power BI semantic-model editing plus the Fabric skill pack.",
     "data": "Analyst stack - Excel, DuckDB, markitdown.",
-    "web": "Browsing and search - Playwright, parallel-search, fetch.",
+    "web": "Browsing and search - parallel-search, fetch.",
     "webdev": "Higgsfield only - OAuth on first use."
   },
   "_retired": {
